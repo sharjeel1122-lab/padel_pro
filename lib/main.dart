@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:padel_pro/custom_widgets/MainScreenNavigation.dart';
+import 'package:padel_pro/screens/ground_explore_screen.dart';
 import 'package:padel_pro/screens/sign_up.dart';
 import 'controllers/main_controller.dart';
 import 'controllers/shop_controller.dart';
@@ -35,7 +36,8 @@ class MyApp extends StatelessWidget {
         getPages: [
           GetPage(name: '/login', page: () => const LoginScreen()),
           GetPage(name: '/home', page: () => const MainScreenNavigation()),
-          GetPage(name: '/signup', page: ()=> SignUpScreen())
+          GetPage(name: '/signup', page: ()=> SignUpScreen()),
+          GetPage(name: '/explore_grounds', page: ()=> GroundExploreScreen())
         ],
       ),
     );

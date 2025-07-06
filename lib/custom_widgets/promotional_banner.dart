@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 class PromotionalBanner extends StatelessWidget {
   const PromotionalBanner({super.key});
@@ -30,7 +31,9 @@ class PromotionalBanner extends StatelessWidget {
                 Text('Special Sports Day!', style: TextStyle(color: Colors.white, fontSize: 14.sp)),
                 SizedBox(height: 12.h),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                   Get.toNamed('/explore_grounds');
+                  },
                   style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF91E208)),
                   child: Text('Book now', style: TextStyle(color: Colors.black)),
                 ),

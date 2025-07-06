@@ -3,15 +3,19 @@ class Ground {
   final String subtitle;
   final int price;
   final double rating;
-  final String image;
+  final List<String> images;
   final bool recommended;
+  final double lat;
+  final double lng;
 
   Ground(
       this.title,
       this.subtitle,
       this.price,
       this.rating,
-      this.image, {
+      this.images, {
         this.recommended = false,
+        required this.lat,
+        required this.lng,
       });
 }

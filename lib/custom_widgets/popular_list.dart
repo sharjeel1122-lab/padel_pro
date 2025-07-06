@@ -53,7 +53,7 @@ class PopularList extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12.r),
                             child: Image.asset(
-                              g.image,
+                              g.images[0],
                               fit: BoxFit.cover,
                               width: double.infinity,
                             ),
