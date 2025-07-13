@@ -67,14 +67,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 SizedBox(height: size.height * 0.05),
 
-                // Email or Phone Field
+
                 TextFormField(
                   controller: _emailPhoneController,
                   cursorColor: Colors.black,
                   keyboardType: TextInputType.emailAddress,
                   style: GoogleFonts.poppins(fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: 'Email or Phone',
+                    labelText: 'Email',
                     prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     focusedBorder: OutlineInputBorder(
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter email or phone';
+                      return 'Please enter email';
                     }
                     return null;
                   },
@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                // Password Field
+
                 GetBuilder<AuthController>(
                   builder: (_) {
                     return TextFormField(
@@ -130,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 10),
 
-                // Remember Me + Forgot Password
+
                 GetBuilder<AuthController>(
                   builder: (_) {
                     return Row(
@@ -163,29 +163,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 20),
 
-                // Sign In Button
                 ElevatedButton.icon(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      authController.login(
-                        _emailPhoneController.text.trim(),
-                        _passwordController.text.trim(),
-                      );
-                    }
+                    Get.toNamed('/admin');
+
+                    // if (_formKey.currentState!.validate()) {
+                    //   authController.login(
+                    //     _emailPhoneController.text.trim(),
+                    //     _passwordController.text.trim(),
+                    //   );
+                    // }
+
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7AFB35),
+                    backgroundColor: const Color(0xFF072A40),
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                  icon: const Icon(Icons.arrow_forward, color: Colors.white),
                   label: Text(
                     'SIGN IN',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.black,
+                      color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -237,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         'Sign up',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
-                          color: const Color(0xFF7AFB35),
+                          color: const Color(0xFF072A40),
                           fontWeight: FontWeight.w500,
                         ),
                       ),

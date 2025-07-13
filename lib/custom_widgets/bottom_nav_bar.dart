@@ -48,13 +48,13 @@ class BottomNavBar extends StatelessWidget {
               ),
               label: 'Home',
             ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.all(12),
-                child: Icon(Icons.map_outlined,size: 24),
-              ),
-              label: 'Shop',
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Padding(
+            //     padding: EdgeInsets.all(12),
+            //     child: Icon(Icons.map_outlined,size: 24),
+            //   ),
+            //   label: 'Shop',
+            // ),
             BottomNavigationBarItem(
               icon: Padding(
                 padding:  EdgeInsets.all(12),

@@ -12,8 +12,11 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final _fullNameController = TextEditingController();
   final _emailPhoneController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _cityController = TextEditingController();
   final _passwordController = TextEditingController();
 
   final authController = Get.put(AuthController());
@@ -22,6 +25,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void dispose() {
     _fullNameController.dispose();
     _emailPhoneController.dispose();
+    _phoneController.dispose();
+    _cityController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -40,8 +45,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: size.height * 0.05),
-
+                SizedBox(height: size.height * 0.01),
                 Text(
                   'Sign Up',
                   style: GoogleFonts.poppins(
@@ -50,7 +54,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     color: Colors.black,
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
@@ -64,60 +67,71 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
-
                 SizedBox(height: size.height * 0.05),
 
-                // Full Name Field
-                TextFormField(
+                // Full Name
+                _buildField(
                   controller: _fullNameController,
-                  cursorColor: Colors.black,
-                  keyboardType: TextInputType.name,
-                  style: GoogleFonts.poppins(fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: 'Full Name',
-                    prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.grey, width: 2),
-                    ),
-                  ),
+                  label: 'Full Name',
+                  icon: Icons.person_outline,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Please enter full name';
+                    } else if (value.trim().length < 3) {
+                      return 'Full name must be at least 3 characters';
                     }
                     return null;
                   },
                 ),
 
-                const SizedBox(height: 20),
-
-                // Email or Phone Field
-                TextFormField(
+                // Email
+                _buildField(
                   controller: _emailPhoneController,
-                  cursorColor: Colors.black,
+                  label: 'Email',
+                  icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
-                  style: GoogleFonts.poppins(fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: 'Email or Phone',
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.grey, width: 2),
-                    ),
-                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter email or phone';
+                      return 'Please enter email';
+                    } else if (!GetUtils.isEmail(value.trim())) {
+                      return 'Enter a valid email';
                     }
                     return null;
                   },
                 ),
 
-                const SizedBox(height: 20),
+                // Phone
+                _buildField(
+                  controller: _phoneController,
+                  label: 'Phone Number',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter phone number';
+                    } else if (!GetUtils.isPhoneNumber(value)) {
+                      return 'Enter a valid number';
+                    } else if (value.length < 11 || value.length > 13) {
+                      return 'Number should be 11–13 digits';
+                    }
+                    return null;
+                  },
+                ),
 
-                // Password Field
+                // City
+                _buildField(
+                  controller: _cityController,
+                  label: 'City',
+                  icon: Icons.location_city_outlined,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter city';
+                    }
+                    return null;
+                  },
+                ),
+
+                // Password
                 GetBuilder<AuthController>(
                   builder: (_) {
                     return TextFormField(
@@ -155,15 +169,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 30),
 
-                // Sign Up Button
                 ElevatedButton.icon(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      Get.offAllNamed('/home');
-                    }
+
+                      if (_formKey.currentState!.validate()) {
+                        authController.signup(
+                          fullName: _fullNameController.text.trim(),
+                          email: _emailPhoneController.text.trim(),
+                          phone: _phoneController.text.trim(),
+                          city: _cityController.text.trim(),
+                          password: _passwordController.text.trim(),
+                        );
+                      }
+
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF7AFB35),
+                    backgroundColor: const Color(0xFF072A40),
                     minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -181,8 +202,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
 
                 const SizedBox(height: 40),
-
-                // Divider
                 Row(
                   children: [
                     const Expanded(child: Divider()),
@@ -193,10 +212,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const Expanded(child: Divider()),
                   ],
                 ),
-
                 const SizedBox(height: 30),
-
-                // Google Sign Up
                 OutlinedButton.icon(
                   onPressed: () {},
                   icon: Image.asset('assets/google_logo.png', height: 24),
@@ -211,10 +227,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Sign In Prompt
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -226,7 +239,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         'Sign in',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
-                          color: const Color(0xFF7AFB35),
+                          color: const Color(0xFF072A40),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -237,6 +250,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required String? Function(String?) validator,
+    TextInputType? keyboardType,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: TextFormField(
+        controller: controller,
+        cursorColor: Colors.black,
+        keyboardType: keyboardType,
+        style: GoogleFonts.poppins(fontSize: 16),
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.grey, width: 2),
+          ),
+        ),
+        validator: validator,
       ),
     );
   }
