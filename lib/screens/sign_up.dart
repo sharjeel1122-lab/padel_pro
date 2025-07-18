@@ -190,12 +190,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: const Icon(Icons.person_add_alt, color: Colors.black),
+                  icon: const Icon(Icons.person_add_alt, color: Colors.white),
                   label: Text(
                     'SIGN UP',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      color: Colors.black,
+                      color: Colors.white,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

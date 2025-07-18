@@ -28,11 +28,11 @@ class BottomNavBar extends StatelessWidget {
           currentIndex: ctrl.selectedIndex.value,
           onTap: ctrl.changeTab,
           backgroundColor: Colors.white,
-          selectedItemColor: Color(0xFF64DD17), // bright green
+          selectedItemColor: Color(0xFF072A40)  , // bright green
           unselectedItemColor: Color(0xFF515151),
           type: BottomNavigationBarType.fixed,
           selectedLabelStyle: TextStyle(
-            color: Color(0xFF9EF904),
+            color: Color(0xFF072A40),
             fontWeight: FontWeight.bold,
             fontSize: 12,
           ),

@@ -58,8 +58,8 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
                     return Theme(
                       data: ThemeData.light().copyWith(
                         colorScheme: const ColorScheme.light(
-                          primary: Colors.green,
-                          onPrimary: Colors.black,
+                          primary: Color(0xFF072A40),
+                          onPrimary: Colors.white,
                           onSurface: Colors.black,
                         ),
                         dialogBackgroundColor: Colors.white,
@@ -78,14 +78,14 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
+                  color: Colors.grey,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(DateFormat.yMMMMd().format(selectedDate), style: GoogleFonts.poppins(fontSize: 14)),
-                    const Icon(Icons.calendar_today, size: 18),
+                    Text(DateFormat.yMMMMd().format(selectedDate), style: GoogleFonts.poppins(fontSize: 14,color: Colors.white)),
+                    const Icon(Icons.calendar_today, size: 18,),
                   ],
                 ),
               ),
@@ -114,7 +114,7 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFF91E208) : Colors.grey.shade200,
+                            color: isSelected ? const Color(0xFF072A40) : Colors.grey,
                             borderRadius: BorderRadius.circular(10),
                             border: isSelected
                                 ? Border.all(color: Colors.black, width: 1)
@@ -124,7 +124,7 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
                             slot,
                             style: GoogleFonts.poppins(
                               fontSize: 13,
-                              color: isBooked ? Colors.red : Colors.black,
+                              color: isBooked ? Colors.red : Colors.white,
                             ),
                           ),
                         ),
@@ -169,7 +169,7 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.check_circle_outline, color: Colors.green, size: 60),
+                          const Icon(Icons.check_circle_outline, color: Color(0xFF072A40), size: 60),
                           const SizedBox(height: 10),
                           Text(
                             "Thank You!",
@@ -188,11 +188,11 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
                               Get.back(); // Close dialog
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF91E208),
+                              backgroundColor: const Color(0xFF072A40),
                               minimumSize: const Size(double.infinity, 45),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            child: Text("Another Booking", style: GoogleFonts.poppins(color: Colors.black)),
+                            child: Text("Another Booking", style: GoogleFonts.poppins(color: Colors.white)),
                           ),
                           const SizedBox(height: 10),
                           OutlinedButton(
@@ -214,11 +214,11 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF91E208),
+                backgroundColor: const Color(0xFF072A40),
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text('Confirm Booking', style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.w500)),
+              child: Text('Confirm Booking', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w500)),
             )
           ],
         ),

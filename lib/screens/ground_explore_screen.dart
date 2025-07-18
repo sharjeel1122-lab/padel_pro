@@ -224,10 +224,10 @@ class GroundExploreScreen extends StatelessWidget {
                                     Get.to(() => GroundBookingScreen(ground: g));
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF91E208),
+                                    backgroundColor: const Color(0xFF072A40),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   ),
-                                  child: Text('Book Now', style: GoogleFonts.poppins(color: Colors.black)),
+                                  child: Text('Book Now', style: GoogleFonts.poppins(color: Colors.white)),
                                 ),
                               ],
                             ),

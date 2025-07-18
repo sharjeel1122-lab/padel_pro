@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:padel_pro/screens/notification_screen.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -37,7 +38,9 @@ class HomeHeader extends StatelessWidget {
               border: Border.all(color: Colors.grey.shade400, width: 0.5),
             ),
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => NotificationsScreen()));
+              },
               icon: Icon(Icons.notifications_none, size: 20.sp, color: Colors.black),
             ),
           )

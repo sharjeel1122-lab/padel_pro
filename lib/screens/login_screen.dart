@@ -165,14 +165,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 ElevatedButton.icon(
                   onPressed: () {
-                    Get.toNamed('/admin');
 
-                    // if (_formKey.currentState!.validate()) {
-                    //   authController.login(
-                    //     _emailPhoneController.text.trim(),
-                    //     _passwordController.text.trim(),
-                    //   );
-                    // }
+                    if (_formKey.currentState!.validate()) {
+                      authController.login(
+                        _emailPhoneController.text.trim(),
+                        _passwordController.text.trim(),
+                      );
+                    }
 
                   },
                   style: ElevatedButton.styleFrom(

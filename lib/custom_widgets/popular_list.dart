@@ -29,7 +29,7 @@ class PopularList extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: () {}, // Optional: go to full list
-                  child: Text('See All', style: TextStyle(color: Color(0xFF91E208))),
+                  child: Text('See All', style: TextStyle(color: Color(0xFF072A40))),
                 ),
               ],
             ),

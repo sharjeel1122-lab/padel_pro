@@ -34,8 +34,8 @@ class PromotionalBanner extends StatelessWidget {
                   onPressed: () {
                    Get.toNamed('/explore_grounds');
                   },
-                  style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF91E208)),
-                  child: Text('Book now', style: TextStyle(color: Colors.black)),
+                  style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF072A40)),
+                  child: Text('Book now', style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),

@@ -34,7 +34,7 @@ class SportScroller extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {},
-                child: Text('See All', style: TextStyle(color: Color(0xFF91E208))),
+                child: Text('See All', style: TextStyle(color: Color(0xFF072A40))),
               ),
             ],
           ),
@@ -81,7 +81,7 @@ class SportScroller extends StatelessWidget {
                               fontWeight: selected
                                   ? FontWeight.bold
                                   : FontWeight.normal,
-                              color: selected ? Color(0xFF91E208) : Colors.black,
+                              color: selected ? Color(0xFF072A40) : Colors.black,
                             ),
                           ),
                         ],

@@ -3,23 +3,25 @@ import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:padel_pro/custom_widgets/main_screen_navigation.dart';
 import 'package:padel_pro/screens/add_ground_screen.dart';
+import 'package:padel_pro/screens/admin/controllers/dashboard_controller.dart';
 import 'package:padel_pro/screens/ground_explore_screen.dart';
 import 'package:padel_pro/screens/home_screen.dart';
 import 'package:padel_pro/screens/sign_up.dart';
 import 'package:padel_pro/screens/splash/splash_screen.dart';
+import 'package:padel_pro/screens/vendor/vendor_court_screen.dart';
+import 'package:padel_pro/services/test_file.dart';
 import 'controllers/main_controller.dart';
 import 'controllers/shop_controller.dart';
 import 'controllers/splash_controller.dart';
 import 'controllers/sport_controller.dart';
 import 'controllers/ground_controller.dart';
 import 'controllers/product_controller.dart';
-
-
+import 'screens/admin/bindings/dashboard_binding.dart';
 import 'screens/admin/dashboard_screen.dart';
 import 'screens/login_screen.dart';
 
 void main() {
-  // Inject controllers globally
+  Get.put(DashboardController());
   Get.put(MainController());
   Get.put(SportController());
   Get.put(GroundController());
@@ -49,8 +51,10 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/addGround', page: () => AddGroundScreen()),
           GetPage(name: '/admin', page: () => AdminDashboardScreen()),
           GetPage(name: '/splash', page: () => OnboardingScreen()),
+          GetPage(name: '/vendorLogin', page: () =>VendorCourtScreen())
         ],
       ),
     );
   }
 }
+

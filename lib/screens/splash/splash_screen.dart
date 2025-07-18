@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/screens/login_screen.dart';
+import 'package:padel_pro/screens/sign_in_slection/sign_in_selection_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../controllers/splash_controller.dart';
@@ -120,7 +121,7 @@ class OnboardingScreen extends StatelessWidget {
                     onPressed: () {
                       if (controller.isLastPage.value) {
                         controller.markOnboardingSeen();
-                        Get.off(() => LoginScreen());
+                        Get.off(() => SignInSelectionScreen());
                       } else {
                         _pageController.nextPage(
                           duration: Duration(milliseconds: 500),

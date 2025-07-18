@@ -41,20 +41,58 @@ class AuthController extends GetxController {
   }
 
   Future<void> login(String email, String password) async {
-    final res = await AuthApi.login(email, password);
+    // 🔐 Hardcoded static credentials
+    final users = {
+      'admin@test.com': {'password': 'admin123', 'role': 'admin'},
+      'vendor@test.com': {'password': 'vendor123', 'role': 'vendor'},
+      'user@test.com': {'password': 'user123', 'role': 'user'},
+    };
 
-    if (res.statusCode == 200) {
-      final user = jsonDecode(res.body)['user'];
-      final role = user['role'];
+    // Trim inputs
+    final trimmedEmail = email.trim();
+    final trimmedPassword = password.trim();
 
-      if (role == 'admin') {
-        Get.offAllNamed('/adminHome');
-      } else {
-        Get.offAllNamed('/home');
-      }
-    } else {
-      final msg = jsonDecode(res.body)['message'] ?? "Login failed";
-      Get.snackbar("Login Error", msg);
+    if (!users.containsKey(trimmedEmail)) {
+      Get.snackbar("Login Failed", "Email not found", snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    final user = users[trimmedEmail]!;
+
+    if (user['password'] != trimmedPassword) {
+      Get.snackbar("Login Failed", "Incorrect password", snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // ✅ Navigate based on role
+    switch (user['role']) {
+      case 'admin':
+        Get.toNamed('/admin');
+        break;
+      case 'vendor':
+        Get.toNamed('/vendorLogin');
+        break;
+      default:
+        Get.toNamed('/userHome');
     }
   }
+
+
+// Future<void> login(String email, String password) async {
+  //   final res = await AuthApi.login(email, password);
+  //
+  //   if (res.statusCode == 200) {
+  //     final user = jsonDecode(res.body)['user'];
+  //     final role = user['role'];
+  //
+  //     if (role == 'admin') {
+  //       Get.offAllNamed('/adminHome');
+  //     } else {
+  //       Get.offAllNamed('/home');
+  //     }
+  //   } else {
+  //     final msg = jsonDecode(res.body)['message'] ?? "Login failed";
+  //     Get.snackbar("Login Error", msg);
+  //   }
+  // }
 }

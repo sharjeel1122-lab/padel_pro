@@ -84,13 +84,13 @@ class ShopListCard extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF91E208),
+                    backgroundColor: Color(0xFF072A40),
                     shape: StadiumBorder(),
                   ),
                   child: Text(
                     'Shop now',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
