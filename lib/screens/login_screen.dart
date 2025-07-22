@@ -227,10 +227,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 // Sign Up Prompt
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don’t have an account? ",
+                    Text("Register as user? ",
                         style: GoogleFonts.poppins(fontSize: 16)),
                     GestureDetector(
                       onTap: () => Get.toNamed('/signup'),
@@ -245,6 +246,65 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
+                SizedBox(height: 20,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Register as vendor?",
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => Get.toNamed('/vendorsignup'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF072A40),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person_add_alt_1, size: 18, color: Colors.white),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Sign up',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // SizedBox(height: 20,),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: [
+                //     Text("Register as Vendor? ",
+                //         style: GoogleFonts.poppins(fontSize: 16)),
+                //     GestureDetector(
+                //       onTap: () => Get.toNamed('/signup'),
+                //       child: Text(
+                //         'Sign up',
+                //         style: GoogleFonts.poppins(
+                //           fontSize: 16,
+                //           color: const Color(0xFF072A40),
+                //           fontWeight: FontWeight.w500,
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // )
+
               ],
             ),
           ),

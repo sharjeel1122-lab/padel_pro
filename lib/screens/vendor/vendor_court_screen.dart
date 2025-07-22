@@ -17,7 +17,7 @@ class VendorCourtScreen extends StatelessWidget {
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
         centerTitle: true,
-        title: Text("My Courts", style: GoogleFonts.poppins(color: Colors.white)),
+        title: Text("My Venues", style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: const Color(0xFF072A40),
         actions: [
           IconButton(
@@ -31,7 +31,7 @@ class VendorCourtScreen extends StatelessWidget {
         child: Obx(() {
           if (controller.courts.isEmpty) {
             return Center(
-              child: Text("No courts added yet",
+              child: Text("No venues added yet",
                   style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey)),
             );
           }

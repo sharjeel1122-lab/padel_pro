@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import '../controllers/main_controller.dart';
 import '../screens/booking_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/profile_screen.dart';
+import '../screens/profile_screen/profile_screen.dart';
 import '../screens/shop_screen.dart';
 import 'bottom_nav_bar.dart';
 import 'home_header.dart';
@@ -20,13 +20,13 @@ class MainScreenNavigation extends StatelessWidget {
       const HomeScreen(),
       // ShopScreen(),
       const BookingScreen(),
-      const ProfileScreen(),
+      const Profile(),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: Colors.grey.shade50,
+        elevation: 1,
         automaticallyImplyLeading: false,
         title: const HomeHeader(),
         toolbarHeight: 70.h,

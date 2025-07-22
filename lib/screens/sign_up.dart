@@ -18,7 +18,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  final _mpinController = TextEditingController();
   final authController = Get.put(AuthController());
 
   @override
@@ -27,6 +27,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _emailPhoneController.dispose();
     _phoneController.dispose();
     _cityController.dispose();
+    _mpinController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -121,15 +122,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 // City
                 _buildField(
                   controller: _cityController,
-                  label: 'City',
+                  label: 'Location',
                   icon: Icons.location_city_outlined,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter city';
+                      return 'Please enter location';
                     }
                     return null;
                   },
                 ),
+
+                TextFormField(
+                  controller: _mpinController,
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                  maxLength: 4,
+                  cursorColor: Colors.black,
+                  style: GoogleFonts.poppins(fontSize: 16),
+                  decoration: InputDecoration(
+                    labelText: '4-digit M-PIN',
+                    prefixIcon: const Icon(Icons.pin),
+                    counterText: "", // hides character counter
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.grey, width: 2),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter your M-PIN';
+                    } else if (value.trim().length != 4 || !RegExp(r'^\d+$').hasMatch(value)) {
+                      return 'M-PIN must be 4 digits';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
 
                 // Password
                 GetBuilder<AuthController>(

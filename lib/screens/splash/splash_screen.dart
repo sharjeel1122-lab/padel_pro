@@ -121,7 +121,7 @@ class OnboardingScreen extends StatelessWidget {
                     onPressed: () {
                       if (controller.isLastPage.value) {
                         controller.markOnboardingSeen();
-                        Get.off(() => SignInSelectionScreen());
+                        Get.off(() => LoginScreen());
                       } else {
                         _pageController.nextPage(
                           duration: Duration(milliseconds: 500),
