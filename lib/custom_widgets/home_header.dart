@@ -44,10 +44,7 @@ class HomeHeader extends StatelessWidget {
                   ],
                 )),
               ),
-              _iconButton(
-                icon: Icons.search,
-                onTap: userController.toggleSearch,
-              ),
+
               SizedBox(width: 8.w),
               _iconButton(
                 icon: Icons.notifications_none,

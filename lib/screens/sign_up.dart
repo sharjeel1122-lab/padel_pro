@@ -201,15 +201,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ElevatedButton.icon(
                   onPressed: () {
 
-                      if (_formKey.currentState!.validate()) {
-                        authController.signup(
-                          fullName: _fullNameController.text.trim(),
-                          email: _emailPhoneController.text.trim(),
-                          phone: _phoneController.text.trim(),
-                          city: _cityController.text.trim(),
-                          password: _passwordController.text.trim(),
-                        );
-                      }
+                      // if (_formKey.currentState!.validate()) {
+                      //   authController.signup(
+                      //     fullName: _fullNameController.text.trim(),
+                      //     email: _emailPhoneController.text.trim(),
+                      //     phone: _phoneController.text.trim(),
+                      //     city: _cityController.text.trim(),
+                      //     password: _passwordController.text.trim(),
+                      //   );
+                      // }
 
                   },
                   style: ElevatedButton.styleFrom(

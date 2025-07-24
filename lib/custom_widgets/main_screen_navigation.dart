@@ -5,7 +5,6 @@ import '../controllers/main_controller.dart';
 import '../screens/booking_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/profile_screen/profile_screen.dart';
-import '../screens/shop_screen.dart';
 import 'bottom_nav_bar.dart';
 import 'home_header.dart';
 
@@ -19,7 +18,7 @@ class MainScreenNavigation extends StatelessWidget {
     final List<Widget> screens = [
       const HomeScreen(),
       // ShopScreen(),
-      const BookingScreen(),
+       BookingScreen(),
       const Profile(),
     ];
 

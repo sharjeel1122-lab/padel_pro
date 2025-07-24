@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/screens/login_screen.dart';
-import 'package:padel_pro/screens/sign_in_slection/sign_in_selection_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../controllers/splash_controller.dart';
@@ -28,6 +27,8 @@ class OnboardingScreen extends StatelessWidget {
       "subtitle": "Rest assured, your payment information is safe with us."
     },
   ];
+
+  OnboardingScreen({super.key});
 
   @override
   @override

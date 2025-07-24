@@ -60,7 +60,7 @@ class BottomNavBar extends StatelessWidget {
                 padding:  EdgeInsets.all(12),
                 child: Icon(Icons.calendar_today_outlined,size: 24),
               ),
-              label: 'My Booking',
+              label: 'Booking',
             ),
             BottomNavigationBarItem(
               icon: Padding(

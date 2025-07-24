@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:padel_pro/screens/admin/controllers/dashboard_controller.dart';
 
 import 'custom_admin_widgets/admin_top_bar.dart';

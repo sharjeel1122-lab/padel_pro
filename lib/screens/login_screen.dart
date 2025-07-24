@@ -150,7 +150,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(context, '/reset-password');
+                          },
                           child: Text(
                             'Forgot Password?',
                             style: GoogleFonts.poppins(fontSize: 16, color: Colors.blue),
@@ -164,32 +166,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 ElevatedButton.icon(
-                  onPressed: () {
-
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      authController.login(
+                      Get.dialog(
+                        Center(child: CircularProgressIndicator()),
+                        barrierDismissible: false,
+                      );
+                      await authController.login(
                         _emailPhoneController.text.trim(),
                         _passwordController.text.trim(),
                       );
+                      Get.back(); // Close loading dialog
                     }
-
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF072A40),
                     minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                   ),
                   icon: const Icon(Icons.arrow_forward, color: Colors.white),
-                  label: Text(
-                    'SIGN IN',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  label: Text('SIGN IN', style: GoogleFonts.poppins(color: Colors.white)),
                 ),
 
                 const SizedBox(height: 40),

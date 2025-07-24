@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:padel_pro/controllers/auth_controller.dart';
 
 import 'add_dialog.dart';
 
 class AdminTopBar extends StatelessWidget {
   final bool isWide;
-  const AdminTopBar({super.key, required this.isWide});
+   AdminTopBar({super.key, required this.isWide});
+  final authController = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +48,12 @@ class AdminTopBar extends StatelessWidget {
             color: const Color(0xFF0A3B5C),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.tune, color: Colors.white),
+          child: IconButton(
+            onPressed: () {
+              authController.logout();
+            },
+            icon: Icon(Icons.logout_rounded, color: Colors.white),
+          ),
         ),
         if (isWide)
           Container(
@@ -68,7 +76,9 @@ class AdminTopBar extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF0A3B5C),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       ],

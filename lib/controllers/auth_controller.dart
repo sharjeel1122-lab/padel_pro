@@ -1,10 +1,14 @@
-import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import '../services/auth_api.dart';
 
 class AuthController extends GetxController {
+  final storage = FlutterSecureStorage();
   bool obscureText = true;
   bool rememberMe = false;
+  bool isLoading = false;
 
   void toggleVisibility() {
     obscureText = !obscureText;
@@ -15,84 +19,151 @@ class AuthController extends GetxController {
     rememberMe = !rememberMe;
     update();
   }
-
-  Future<void> signup({
-    required String fullName,
-    required String email,
-    required String password,
-    required String phone,
-    required String city,
-  }) async {
-    final res = await AuthApi.signup(
-      fullName: fullName,
-      email: email,
-      password: password,
-      phone: phone,
-      city: city,
-    );
-
-    if (res.statusCode == 201) {
-      Get.snackbar("Success", "User created successfully");
-      Get.offAllNamed('/login');
-    } else {
-      final msg = jsonDecode(res.body)['message'] ?? "Signup failed";
-      Get.snackbar("Error", msg);
-    }
+  void togglePasswordVisibility() {
+    obscureText = !obscureText;
+    update();
   }
 
   Future<void> login(String email, String password) async {
-    // 🔐 Hardcoded static credentials
-    final users = {
-      'admin@test.com': {'password': 'admin123', 'role': 'admin'},
-      'vendor@test.com': {'password': 'vendor123', 'role': 'vendor'},
-      'user@test.com': {'password': 'user123', 'role': 'user'},
-    };
+    try {
+      isLoading = true;
+      update();
+      Get.closeAllSnackbars();
 
-    // Trim inputs
-    final trimmedEmail = email.trim();
-    final trimmedPassword = password.trim();
+      final response = await AuthApi.login(email, password);
 
-    if (!users.containsKey(trimmedEmail)) {
-      Get.snackbar("Login Failed", "Email not found", snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
+      // Validate response structure
+      if (response['token'] == null || response['user']?['role'] == null) {
+        throw Exception('Invalid response structure from server');
+      }
 
-    final user = users[trimmedEmail]!;
+      final token = response['token'];
+      final role = response['user']['role'];
 
-    if (user['password'] != trimmedPassword) {
-      Get.snackbar("Login Failed", "Incorrect password", snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
+      await storage.write(key: 'token', value: token);
+      await storage.write(key: 'role', value: role);
 
-    // ✅ Navigate based on role
-    switch (user['role']) {
-      case 'admin':
-        Get.toNamed('/admin');
-        break;
-      case 'vendor':
-        Get.toNamed('/vendorLogin');
-        break;
-      default:
-        Get.toNamed('/userHome');
+      Get.snackbar(
+        'Login Successful',
+        'Welcome ${role.toUpperCase()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      // Role-based navigation with delay
+      await Future.delayed(Duration(seconds: 1));
+      switch (role.toLowerCase()) {
+        case 'admin':
+          Get.offAllNamed('/admin-dashboard');
+          break;
+        case 'vendor':
+          Get.offAllNamed('/vendor-dashboard');
+          break;
+        default:
+          Get.offAllNamed('/user-home');
+      }
+
+    } on http.ClientException {
+      Get.snackbar(
+        'Network Error',
+        'Please check your internet connection',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Login Failed',
+        e.toString().replaceAll('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+      );
+    } finally {
+      isLoading = false;
+      update();
     }
   }
 
+  Future<void> logout() async {
+    try {
+      await storage.delete(key: 'token');
+      await storage.delete(key: 'role');
 
-// Future<void> login(String email, String password) async {
-  //   final res = await AuthApi.login(email, password);
-  //
-  //   if (res.statusCode == 200) {
-  //     final user = jsonDecode(res.body)['user'];
-  //     final role = user['role'];
-  //
-  //     if (role == 'admin') {
-  //       Get.offAllNamed('/adminHome');
-  //     } else {
-  //       Get.offAllNamed('/home');
-  //     }
-  //   } else {
-  //     final msg = jsonDecode(res.body)['message'] ?? "Login failed";
-  //     Get.snackbar("Login Error", msg);
-  //   }
-  // }
+      Get.snackbar(
+        'Logged Out',
+        'You have been successfully logged out',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.blue,
+        colorText: Colors.white,
+      );
+
+      Get.offAllNamed('/login');
+    } catch (e) {
+      Get.snackbar(
+        'Logout Error',
+        'Failed to clear session data',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+      );
+    }
+  }
+
+  Future<void> signupVendor({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String mpin,
+    required String city,
+    required String phone,
+    required String cnic,
+    required String ntn,
+    String? photo,
+  }) async {
+    try {
+      isLoading = true;
+      update();
+      Get.closeAllSnackbars();
+
+      await AuthApi.signupVendor(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+        mpin: mpin,
+        city: city,
+        phone: phone,
+        cnic: cnic,
+        ntn: ntn,
+        photo: photo,
+      );
+
+      Get.snackbar(
+        'Success',
+        'Vendor registration submitted for approval',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      Get.offAllNamed('/login');
+    } on http.ClientException {
+      Get.snackbar(
+        'Network Error',
+        'Failed to connect to server',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Registration Failed',
+        e.toString().replaceAll('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+      );
+    } finally {
+      isLoading = false;
+      update();
+    }
+  }
 }
