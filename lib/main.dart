@@ -16,6 +16,7 @@ import 'package:padel_pro/screens/sign_up.dart';
 import 'package:padel_pro/screens/splash/splash_screen.dart';
 import 'package:padel_pro/screens/vendor/vendor_auth/vendor_signup_screen.dart';
 import 'package:padel_pro/screens/vendor/vendor_court_screen.dart';
+import 'package:padel_pro/screens/verification/email_verification_screen.dart';
 import 'controllers/main_controller.dart';
 import 'controllers/shop_controller.dart';
 import 'controllers/splash_controller.dart';
@@ -75,6 +76,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/mpin', page: () => MPINLoginScreen()),
           GetPage(name: '/forget-mpin', page: () => ForgotMPINScreen()),
           GetPage(name: '/reset-password', page: () => ResetPasswordRequestScreen()),
+          GetPage(name: '/verify-otp', page: () => EmailVerificationScreen()),
         ],
       ),
     );

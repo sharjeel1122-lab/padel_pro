@@ -9,6 +9,7 @@ class AuthController extends GetxController {
   bool obscureText = true;
   bool rememberMe = false;
   bool isLoading = false;
+  var isLoad = false.obs;
 
   void toggleVisibility() {
     obscureText = !obscureText;
@@ -166,4 +167,61 @@ class AuthController extends GetxController {
       update();
     }
   }
+
+
+
+//Sign up
+
+  Future<void> signupUser({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String password,
+    required String mpin,
+    required String city,
+    required String phone,
+    String? photoPath,
+  }) async {
+    try {
+      isLoading = true;
+      update();
+
+      final response = await AuthApi.signupUser(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        password: password,
+        mpin: mpin,
+        city: city,
+        phone: phone,
+
+      );
+
+      Get.snackbar(
+        'Signup Successful',
+        response['message'] ?? 'Account created. Check your email for OTP.',
+        backgroundColor: Colors.green,
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+      );
+
+      Get.offAllNamed('/verify-otp');
+
+    } catch (e) {
+      Get.snackbar(
+        'Signup Failed',
+        e.toString().replaceAll('Exception: ', ''),
+        backgroundColor: Colors.red,
+        snackPosition: SnackPosition.BOTTOM,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading = false;
+      update();
+    }
+  }
+
+
+
+
 }

@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/auth_controller.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:padel_pro/app_color.dart';
+import '../../../controllers/auth_controller.dart';
+import '../../../custom textfield/vendor_signup_fields.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -12,66 +17,110 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final authController = Get.put(AuthController());
+  String? _imagePath;
 
+  // Controllers
   final _fullNameController = TextEditingController();
-  final _emailPhoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _cityController = TextEditingController();
   final _passwordController = TextEditingController();
   final _mpinController = TextEditingController();
-  final authController = Get.put(AuthController());
 
   @override
   void dispose() {
     _fullNameController.dispose();
-    _emailPhoneController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     _cityController.dispose();
-    _mpinController.dispose();
     _passwordController.dispose();
+    _mpinController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imagePath = pickedFile.path;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: size.height * 0.01),
-                Text(
-                  'Sign Up',
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
+                // Back Button
+                IconButton(
+                  icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+                  onPressed: () => Get.back(),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
+
+                const SizedBox(height: 10),
+
+                // Title
+                Center(
                   child: Text(
-                    'New here? Sign up and start your',
-                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
-                    textAlign: TextAlign.center,
+                    'Create Account',
+                    style: GoogleFonts.poppins(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryText,
+                    ),
                   ),
                 ),
-                Text(
-                  'exciting adventure!',
-                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
-                  textAlign: TextAlign.center,
+
+                const SizedBox(height: 5),
+
+                Center(
+                  child: Text(
+                    'Fill in your details to get started',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
                 ),
-                SizedBox(height: size.height * 0.05),
+
+                const SizedBox(height: 30),
+
+                // Profile Picture
+                Center(
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: AppColors.lightGrey,
+                      backgroundImage: _imagePath != null
+                          ? FileImage(File(_imagePath!))
+                          : null,
+                      child: _imagePath == null
+                          ? const Icon(
+                              Icons.camera_alt,
+                              size: 30,
+                              color: AppColors.primary,
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
 
                 // Full Name
-                _buildField(
+                CustomTextField(
                   controller: _fullNameController,
                   label: 'Full Name',
                   icon: Icons.person_outline,
@@ -86,8 +135,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
 
                 // Email
-                _buildField(
-                  controller: _emailPhoneController,
+                CustomTextField(
+                  controller: _emailController,
                   label: 'Email',
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
@@ -102,7 +151,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
 
                 // Phone
-                _buildField(
+                CustomTextField(
                   controller: _phoneController,
                   label: 'Phone Number',
                   icon: Icons.phone_outlined,
@@ -113,14 +162,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     } else if (!GetUtils.isPhoneNumber(value)) {
                       return 'Enter a valid number';
                     } else if (value.length < 11 || value.length > 13) {
-                      return 'Number should be 11–13 digits';
+                      return 'Number should be 11-13 digits';
                     }
                     return null;
                   },
                 ),
 
                 // City
-                _buildField(
+                CustomTextField(
                   controller: _cityController,
                   label: 'Location',
                   icon: Icons.location_city_outlined,
@@ -132,59 +181,41 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   },
                 ),
 
-                TextFormField(
+                // MPIN
+                CustomTextField(
                   controller: _mpinController,
-                  obscureText: true,
+                  label: '4-digit M-PIN',
+                  icon: Icons.pin,
                   keyboardType: TextInputType.number,
                   maxLength: 4,
-                  cursorColor: Colors.black,
-                  style: GoogleFonts.poppins(fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: '4-digit M-PIN',
-                    prefixIcon: const Icon(Icons.pin),
-                    counterText: "", // hides character counter
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.grey, width: 2),
-                    ),
-                  ),
+                  obscureText: true,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your M-PIN';
-                    } else if (value.trim().length != 4 || !RegExp(r'^\d+$').hasMatch(value)) {
+                    } else if (value.trim().length != 4 ||
+                        !RegExp(r'^\d+$').hasMatch(value)) {
                       return 'M-PIN must be 4 digits';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
 
                 // Password
                 GetBuilder<AuthController>(
-                  builder: (_) {
-                    return TextFormField(
+                  builder: (controller) {
+                    return CustomTextField(
                       controller: _passwordController,
-                      obscureText: authController.obscureText,
-                      cursorColor: Colors.black,
-                      style: GoogleFonts.poppins(fontSize: 16),
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            authController.obscureText
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: Colors.black,
-                          ),
-                          onPressed: authController.toggleVisibility,
+                      label: 'Password',
+                      icon: Icons.lock_outline,
+                      obscureText: controller.obscureText,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          controller.obscureText
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: AppColors.primary,
                         ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey, width: 2),
-                        ),
+                        onPressed: controller.togglePasswordVisibility,
                       ),
                       validator: (value) {
                         if (value == null || value.length < 6) {
@@ -198,116 +229,161 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 const SizedBox(height: 30),
 
-                ElevatedButton.icon(
-                  onPressed: () {
-
-                      // if (_formKey.currentState!.validate()) {
-                      //   authController.signup(
-                      //     fullName: _fullNameController.text.trim(),
-                      //     email: _emailPhoneController.text.trim(),
-                      //     phone: _phoneController.text.trim(),
-                      //     city: _cityController.text.trim(),
-                      //     password: _passwordController.text.trim(),
-                      //   );
-                      // }
-
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF072A40),
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  icon: const Icon(Icons.person_add_alt, color: Colors.white),
-                  label: Text(
-                    'SIGN UP',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 40),
+                // Terms and Conditions
                 Row(
                   children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('OR', style: GoogleFonts.poppins(fontSize: 14)),
+                    Checkbox(
+                      value: true,
+                      onChanged: (value) {},
+                      activeColor: AppColors.primary,
                     ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: Image.asset('assets/google_logo.png', height: 24),
-                  label: Text(
-                    'Sign up with Google',
-                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.black),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Already have an account? ",
-                        style: GoogleFonts.poppins(fontSize: 16)),
-                    GestureDetector(
-                      onTap: () => Get.back(),
-                      child: Text(
-                        'Sign in',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: const Color(0xFF072A40),
-                          fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          text: 'I agree to the ',
+                          style: GoogleFonts.poppins(fontSize: 12),
+                          children: [
+                            TextSpan(
+                              text: 'Terms & Conditions',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
+
+                const SizedBox(height: 20),
+
+                // Sign Up Button
+                GetBuilder<AuthController>(
+                  builder: (controller) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFF072A40),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                          child:
+                          controller.isLoading
+                              ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                              : Text(
+                            'REGISTER',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        onPressed: controller.isLoading
+                            ? null
+                            : () {
+                                if (_formKey.currentState!.validate()) {
+                                  controller.signupUser(
+                                    firstName: _fullNameController.text.trim().split(" ").first,
+                                    lastName: _fullNameController.text.trim().split(" ").skip(1).join(" "),
+                                    email: _emailController.text.trim(),
+                                    phone: _phoneController.text.trim(),
+                                    city: _cityController.text.trim(),
+                                    password: _passwordController.text.trim(),
+                                    mpin: _mpinController.text.trim(),
+                                    photoPath: _imagePath, // assuming _imagePath is a String path
+                                  );
+
+                                }
+
+                              },
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                // OR Divider
+                Row(
+                  children: [
+                    const Expanded(child: Divider()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        'OR',
+                        style: GoogleFonts.poppins(fontSize: 14),
+                      ),
+                    ),
+                    const Expanded(child: Divider()),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // Google Sign Up
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: Image.asset('assets/google_logo.png', height: 24),
+                    label: Text(
+                      'Sign up with Google',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: AppColors.primaryText,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Already have account
+                Center(
+                  child: TextButton(
+                    onPressed: () => Get.back(),
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Already have an account? ',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Sign In',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-
-  Widget _buildField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required String? Function(String?) validator,
-    TextInputType? keyboardType,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TextFormField(
-        controller: controller,
-        cursorColor: Colors.black,
-        keyboardType: keyboardType,
-        style: GoogleFonts.poppins(fontSize: 16),
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.grey, width: 2),
-          ),
-        ),
-        validator: validator,
       ),
     );
   }
