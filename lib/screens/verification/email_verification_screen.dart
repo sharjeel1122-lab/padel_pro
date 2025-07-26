@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:padel_pro/screens/verification/verification_controller.dart';
-
+import 'package:padel_pro/controllers/auth controllers/otp_controller.dart';
 
 class EmailVerificationScreen extends StatelessWidget {
-  const EmailVerificationScreen({super.key});
+  final OtpController controller = Get.put(OtpController());
+
+  EmailVerificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(VerificationController());
+    final OtpController controller = Get.put(OtpController());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -19,12 +20,8 @@ class EmailVerificationScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/logo.png',
-                height: 100,
-              ),
+              Image.asset('assets/logo.png', height: 100),
               const SizedBox(height: 30),
-
               Text(
                 'Verify Your Email',
                 style: GoogleFonts.poppins(
@@ -33,19 +30,12 @@ class EmailVerificationScreen extends StatelessWidget {
                   color: const Color(0xFF072A40),
                 ),
               ),
-
               const SizedBox(height: 10),
-
               Text(
                 'We sent a 6-digit code to your email',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
+                style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
               ),
-
               const SizedBox(height: 5),
-
               Obx(() => Text(
                 controller.email.value,
                 style: GoogleFonts.poppins(
@@ -54,52 +44,56 @@ class EmailVerificationScreen extends StatelessWidget {
                   color: const Color(0xFF072A40),
                 ),
               )),
-
               const SizedBox(height: 40),
-
-              // OTP Input Fields
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (index) => SizedBox(
-                  width: 45,
-                  child: TextField(
-                    controller: controller.otpControllers[index],
-                    focusNode: controller.focusNodes[index],
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 1,
-                    style: GoogleFonts.poppins(fontSize: 18),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                          color: Color(0xFF072A40),
-                          width: 2,
+                children: List.generate(
+                  6,
+                      (index) => SizedBox(
+                    width: 45,
+                    child: TextField(
+                      controller: controller.otpControllers[index],
+                      focusNode: controller.focusNodes[index],
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      maxLength: 1,
+                      style: GoogleFonts.poppins(fontSize: 18),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF072A40),
+                            width: 2,
+                          ),
                         ),
                       ),
+                      onChanged: (value) {
+                        if (value.length == 1 && index < 5) {
+                          controller.focusNodes[index + 1].requestFocus();
+                        }
+                        if (value.isEmpty && index > 0) {
+                          controller.focusNodes[index - 1].requestFocus();
+                        }
+                      },
                     ),
-                    onChanged: (value) {
-                      if (value.length == 1 && index < 5) {
-                        controller.focusNodes[index + 1].requestFocus();
-                      }
-                    },
                   ),
-                )),
+                ),
               ),
-
               const SizedBox(height: 30),
-
-              // Verify Button
               Obx(() => SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: controller.isLoading.value ? null : controller.verifyOtp,
+                  onPressed: controller.isLoading.value
+                      ? null
+                      : () {
+                    controller.verifyOtp();
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF072A40),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -126,10 +120,7 @@ class EmailVerificationScreen extends StatelessWidget {
                   ),
                 ),
               )),
-
               const SizedBox(height: 30),
-
-              // Resend Code
               Obx(() => Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -142,7 +133,7 @@ class EmailVerificationScreen extends StatelessWidget {
                   ),
                   controller.countdown.value > 0
                       ? Text(
-                    'Resend in ${controller.countdown.value}',
+                    'Resend in ${controller.countdown.value}s',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       color: const Color(0xFF072A40),
@@ -162,14 +153,9 @@ class EmailVerificationScreen extends StatelessWidget {
                   ),
                 ],
               )),
-
               const SizedBox(height: 20),
-
-              // Support Text
               TextButton(
-                onPressed: () {
-                  Get.toNamed('/support');
-                },
+                onPressed: () => Get.toNamed('/support'),
                 child: Text(
                   'Need help? Contact Support',
                   style: GoogleFonts.poppins(

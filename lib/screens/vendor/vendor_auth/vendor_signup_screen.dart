@@ -1,24 +1,18 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:padel_pro/app_color.dart';
-import '../../../controllers/auth_controller.dart';
+import 'package:padel_pro/controllers/auth%20controllers/vendor_signup_controller.dart';
 import '../../../custom textfield/vendor_signup_fields.dart';
 
-class VendorSignUpScreen extends StatefulWidget {
-  const VendorSignUpScreen({super.key});
+class VendorSignUpScreen extends StatelessWidget {
+  VendorSignUpScreen({super.key});
 
-  @override
-  State<VendorSignUpScreen> createState() => _VendorSignUpScreenState();
-}
-
-class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final authController = Get.put(AuthController());
-  String? _imagePath;
+  final VendorSignUpController vendorController = Get.find<VendorSignUpController>();
+  final RxString _imagePath = RxString('');
 
   // Controllers
   final _firstNameController = TextEditingController();
@@ -32,29 +26,11 @@ class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
   final _cityController = TextEditingController();
   final _addressController = TextEditingController();
 
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _mpinController.dispose();
-    _phoneController.dispose();
-    _cnicController.dispose();
-    _ntnController.dispose();
-    _cityController.dispose();
-    _addressController.dispose();
-    super.dispose();
-  }
-
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
-      setState(() {
-        _imagePath = pickedFile.path;
-      });
+      _imagePath.value = pickedFile.path;
     }
   }
 
@@ -106,23 +82,23 @@ class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
 
                 // Profile Picture
                 Center(
-                  child: GestureDetector(
+                  child: Obx(() => GestureDetector(
                     onTap: _pickImage,
                     child: CircleAvatar(
                       radius: 50,
                       backgroundColor: AppColors.lightGrey,
-                      backgroundImage: _imagePath != null
-                          ? FileImage(File(_imagePath!))
+                      backgroundImage: _imagePath.value.isNotEmpty
+                          ? FileImage(File(_imagePath.value))
                           : null,
-                      child: _imagePath == null
+                      child: _imagePath.value.isEmpty
                           ? const Icon(
-                              Icons.camera_alt,
-                              size: 30,
-                              color: AppColors.primary,
-                            )
+                        Icons.camera_alt,
+                        size: 30,
+                        color: AppColors.primary,
+                      )
                           : null,
                     ),
-                  ),
+                  )),
                 ),
 
                 const SizedBox(height: 30),
@@ -136,7 +112,7 @@ class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
                         label: 'First Name',
                         icon: Icons.person_outline,
                         validator: (value) =>
-                            value == null || value.trim().isEmpty
+                        value == null || value.trim().isEmpty
                             ? 'Required field'
                             : null,
                       ),
@@ -147,7 +123,7 @@ class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
                         controller: _lastNameController,
                         label: 'Last Name',
                         validator: (value) =>
-                            value == null || value.trim().isEmpty
+                        value == null || value.trim().isEmpty
                             ? 'Required field'
                             : null,
                       ),
@@ -168,28 +144,24 @@ class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
                 ),
 
                 // Password with visibility toggle
-                GetBuilder<AuthController>(
-                  builder: (controller) {
-                    return CustomTextField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      icon: Icons.lock_outline,
-                      obscureText: controller.obscureText,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          controller.obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: AppColors.primary,
-                        ),
-                        onPressed: controller.togglePasswordVisibility,
-                      ),
-                      validator: (value) => value == null || value.length < 6
-                          ? 'Minimum 6 characters'
-                          : null,
-                    );
-                  },
-                ),
+                Obx(() => CustomTextField(
+                  controller: _passwordController,
+                  label: 'Password',
+                  icon: Icons.lock_outline,
+                  obscureText: vendorController.obscureText.value,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      vendorController.obscureText.value
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: AppColors.primary,
+                    ),
+                    onPressed: vendorController.togglePasswordVisibility,
+                  ),
+                  validator: (value) => value == null || value.length < 6
+                      ? 'Minimum 6 characters'
+                      : null,
+                )),
 
                 CustomTextField(
                   controller: _mpinController,
@@ -299,52 +271,46 @@ class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
                 const SizedBox(height: 20),
 
                 // Sign Up Button
-                GetBuilder<AuthController>(
-                  builder: (controller) {
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: controller.isLoading
-                            ? null
-                            : () {
-                                if (_formKey.currentState!.validate()) {
-                                  controller.signupVendor(
-                                    firstName: _firstNameController.text.trim(),
-                                    lastName: _lastNameController.text.trim(),
-                                    email: _emailController.text.trim(),
-                                    password: _passwordController.text.trim(),
-                                    mpin: _mpinController.text.trim(),
-                                    phone: _phoneController.text.trim(),
-                                    cnic: _cnicController.text.trim(),
-                                    ntn: _ntnController.text.trim(),
-                                    city: _cityController.text.trim(),
-                                    photo: _imagePath,
-                                  );
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: controller.isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : Text(
-                                'REGISTER AS VENDOR',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                Obx(() => SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: vendorController.isLoading.value
+                        ? null
+                        : () {
+                      if (_formKey.currentState!.validate()) {
+                        vendorController.signupVendor({
+                          'firstName': _firstNameController.text.trim(),
+                          'lastName': _lastNameController.text.trim(),
+                          'email': _emailController.text.trim(),
+                          'password': _passwordController.text.trim(),
+                          'mpin': _mpinController.text.trim(),
+                          'phone': _phoneController.text.trim(),
+                          'cnic': _cnicController.text.trim(),
+                          'ntn': _ntnController.text.trim(),
+                          'city': _cityController.text.trim(),
+                          'address': _addressController.text.trim(),
+                        }, _imagePath.value.isNotEmpty ? File(_imagePath.value) : null);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                    child: vendorController.isLoading.value
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                      'REGISTER AS VENDOR',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                )),
 
                 const SizedBox(height: 20),
 
@@ -355,7 +321,10 @@ class _VendorSignUpScreenState extends State<VendorSignUpScreen> {
                     child: Text.rich(
                       TextSpan(
                         text: 'Already have an account? ',
-                        style: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
+                        style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: Colors.black
+                        ),
                         children: [
                           TextSpan(
                             text: 'Sign In',

@@ -1,28 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
+import '../controllers/auth controllers/auth_rolebase_controller.dart';
 
-class _LoginScreenState extends State<LoginScreen> {
+class LoginScreen extends StatelessWidget {
+  LoginScreen({super.key});
+
   final _formKey = GlobalKey<FormState>();
   final _emailPhoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  final authController = Get.put(AuthController());
-
-  @override
-  void dispose() {
-    _emailPhoneController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+  final AuthController authController = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: size.height * 0.05),
-
                 Text(
                   'Sign In',
                   style: GoogleFonts.poppins(
@@ -48,26 +37,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Login to your account for the best experience.',
-                    style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Login to your account for the best',
+                        style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        'experience.',
+                        style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'experience.',
-                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-
                 SizedBox(height: size.height * 0.05),
-
-
                 TextFormField(
                   controller: _emailPhoneController,
                   cursorColor: Colors.black,
@@ -89,107 +77,70 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
-
-
-                GetBuilder<AuthController>(
-                  builder: (_) {
-                    return TextFormField(
-                      controller: _passwordController,
-                      obscureText: authController.obscureText,
-                      cursorColor: Colors.black,
-                      style: GoogleFonts.poppins(fontSize: 16),
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            authController.obscureText
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: Colors.black,
-                          ),
-                          onPressed: authController.toggleVisibility,
-                        ),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey, width: 2),
-                        ),
+                Obx(() => TextFormField(
+                  controller: _passwordController,
+                  obscureText: authController.obscureText.value,
+                  cursorColor: Colors.black,
+                  style: GoogleFonts.poppins(fontSize: 16),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        authController.obscureText.value
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: Colors.black,
                       ),
-                      validator: (value) {
-                        if (value == null || value.length < 6) {
-                          return 'Enter at least 6 characters';
-                        }
-                        return null;
-                      },
-                    );
+                      onPressed: authController.toggleVisibility,
+                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.grey, width: 2),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.length < 6) {
+                      return 'Enter at least 6 characters';
+                    }
+                    return null;
                   },
-                ),
-
-                const SizedBox(height: 10),
-
-
-                GetBuilder<AuthController>(
-                  builder: (_) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Switch(
-                              value: authController.rememberMe,
-                              onChanged: (_) => authController.toggleRememberMe(),
-                              activeColor: Colors.black,
-                            ),
-                            Text(
-                              'Remember Me',
-                              style: GoogleFonts.poppins(fontSize: 16, color: Colors.black),
-                            ),
-                          ],
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/reset-password');
-                          },
-                          child: Text(
-                            'Forgot Password?',
-                            style: GoogleFonts.poppins(fontSize: 16, color: Colors.blue),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-
+                )),
                 const SizedBox(height: 20),
-
-                ElevatedButton.icon(
-                  onPressed: () async {
+                const SizedBox(height: 20),
+                Obx(() => ElevatedButton.icon(
+                  onPressed: authController.isLoading.value
+                      ? null
+                      : () async {
                     if (_formKey.currentState!.validate()) {
-                      Get.dialog(
-                        Center(child: CircularProgressIndicator()),
-                        barrierDismissible: false,
-                      );
                       await authController.login(
                         _emailPhoneController.text.trim(),
                         _passwordController.text.trim(),
                       );
-                      Get.back(); // Close loading dialog
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF072A40),
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  icon: const Icon(Icons.arrow_forward, color: Colors.white),
-                  label: Text('SIGN IN', style: GoogleFonts.poppins(color: Colors.white)),
-                ),
-
+                  icon: authController.isLoading.value
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : const Icon(Icons.arrow_forward, color: Colors.white),
+                  label: Text(
+                    authController.isLoading.value ? 'Signing in...' : 'SIGN IN',
+                    style: GoogleFonts.poppins(color: Colors.white),
+                  ),
+                )),
                 const SizedBox(height: 40),
-
-                // Divider
                 Row(
                   children: [
                     const Expanded(child: Divider()),
@@ -200,10 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Expanded(child: Divider()),
                   ],
                 ),
-
                 const SizedBox(height: 30),
-
-                // Google Sign In
                 OutlinedButton.icon(
                   onPressed: () {},
                   icon: Image.asset('assets/google_logo.png', height: 24),
@@ -218,11 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Sign Up Prompt
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -241,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -256,14 +200,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     GestureDetector(
                       onTap: () => Get.toNamed('/vendorsignup'),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: const Color(0xFF072A40),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.person_add_alt_1, size: 18, color: Colors.white),
+                            const Icon(Icons.person_add_alt_1,
+                                size: 18, color: Colors.white),
                             const SizedBox(width: 6),
                             Text(
                               'Sign up',
@@ -279,27 +225,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-
-                // SizedBox(height: 20,),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: [
-                //     Text("Register as Vendor? ",
-                //         style: GoogleFonts.poppins(fontSize: 16)),
-                //     GestureDetector(
-                //       onTap: () => Get.toNamed('/signup'),
-                //       child: Text(
-                //         'Sign up',
-                //         style: GoogleFonts.poppins(
-                //           fontSize: 16,
-                //           color: const Color(0xFF072A40),
-                //           fontWeight: FontWeight.w500,
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // )
-
               ],
             ),
           ),

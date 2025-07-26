@@ -5,20 +5,15 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:padel_pro/app_color.dart';
-import '../../../controllers/auth_controller.dart';
+import 'package:padel_pro/controllers/auth%20controllers/user_signup_controller.dart';
 import '../../../custom textfield/vendor_signup_fields.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignUpScreen extends StatelessWidget {
+  SignUpScreen({super.key});
 
-  @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
-}
-
-class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final authController = Get.put(AuthController());
-  String? _imagePath;
+  final UserSignUpController userSignUpController = Get.find<UserSignUpController>();
+  final RxString _imagePath = RxString(''); // Initialize with empty string
 
   // Controllers
   final _fullNameController = TextEditingController();
@@ -28,25 +23,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _mpinController = TextEditingController();
 
-  @override
-  void dispose() {
-    _fullNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _cityController.dispose();
-    _passwordController.dispose();
-    _mpinController.dispose();
-    super.dispose();
-  }
-
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
-      setState(() {
-        _imagePath = pickedFile.path;
-      });
+      _imagePath.value = pickedFile.path;
     }
   }
 
@@ -98,23 +79,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                 // Profile Picture
                 Center(
-                  child: GestureDetector(
+                  child: Obx(() => GestureDetector(
                     onTap: _pickImage,
                     child: CircleAvatar(
                       radius: 50,
                       backgroundColor: AppColors.lightGrey,
-                      backgroundImage: _imagePath != null
-                          ? FileImage(File(_imagePath!))
+                      backgroundImage: _imagePath.value.isNotEmpty
+                          ? FileImage(File(_imagePath.value))
                           : null,
-                      child: _imagePath == null
+                      child: _imagePath.value.isEmpty
                           ? const Icon(
-                              Icons.camera_alt,
-                              size: 30,
-                              color: AppColors.primary,
-                            )
+                        Icons.camera_alt,
+                        size: 30,
+                        color: AppColors.primary,
+                      )
                           : null,
                     ),
-                  ),
+                  )),
                 ),
 
                 const SizedBox(height: 30),
@@ -201,31 +182,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
 
                 // Password
-                GetBuilder<AuthController>(
-                  builder: (controller) {
-                    return CustomTextField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      icon: Icons.lock_outline,
-                      obscureText: controller.obscureText,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          controller.obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: AppColors.primary,
-                        ),
-                        onPressed: controller.togglePasswordVisibility,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.length < 6) {
-                          return 'Enter at least 6 characters';
-                        }
-                        return null;
-                      },
-                    );
+                Obx(() => CustomTextField(
+                  controller: _passwordController,
+                  label: 'Password',
+                  icon: Icons.lock_outline,
+                  obscureText: userSignUpController.obscureText.value, // Add .value here
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      userSignUpController.obscureText.value
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: AppColors.primary,
+                    ),
+                    onPressed: userSignUpController.togglePasswordVisibility,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.length < 6) {
+                      return 'Enter at least 6 characters';
+                    }
+                    return null;
                   },
-                ),
+                )),
 
                 const SizedBox(height: 30),
 
@@ -261,55 +238,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 20),
 
                 // Sign Up Button
-                GetBuilder<AuthController>(
-                  builder: (controller) {
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF072A40),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                          child:
-                          controller.isLoading
-                              ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                              : Text(
-                            'REGISTER',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        onPressed: controller.isLoading
-                            ? null
-                            : () {
-                                if (_formKey.currentState!.validate()) {
-                                  controller.signupUser(
-                                    firstName: _fullNameController.text.trim().split(" ").first,
-                                    lastName: _fullNameController.text.trim().split(" ").skip(1).join(" "),
-                                    email: _emailController.text.trim(),
-                                    phone: _phoneController.text.trim(),
-                                    city: _cityController.text.trim(),
-                                    password: _passwordController.text.trim(),
-                                    mpin: _mpinController.text.trim(),
-                                    photoPath: _imagePath, // assuming _imagePath is a String path
-                                  );
-
-                                }
-
-                              },
+                Obx(() => SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF072A40),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                    onPressed: userSignUpController.isLoading.value
+                        ? null
+                        : () {
+                      if (_formKey.currentState!.validate()) {
+                        userSignUpController.signupUser(
+                          firstName: _fullNameController.text.trim().split(" ").first,
+                          lastName: _fullNameController.text.trim().split(" ").skip(1).join(" "),
+                          email: _emailController.text.trim(),
+                          phone: _phoneController.text.trim(),
+                          city: _cityController.text.trim(),
+                          password: _passwordController.text.trim(),
+                          mpin: _mpinController.text.trim(),
+                          photoPath: _imagePath.value,
+                        );
+                      }
+                    },
+                    child: userSignUpController.isLoading.value
+                        ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                        : Text(
+                      'REGISTER',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                )),
 
                 const SizedBox(height: 20),
 

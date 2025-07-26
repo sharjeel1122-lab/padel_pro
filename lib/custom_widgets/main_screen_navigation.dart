@@ -27,7 +27,7 @@ class MainScreenNavigation extends StatelessWidget {
         backgroundColor: Colors.grey.shade50,
         elevation: 1,
         automaticallyImplyLeading: false,
-        title: const HomeHeader(),
+        title: HomeHeader(),
         toolbarHeight: 70.h,
       ),
       body: Obx(() => screens[ctrl.selectedIndex.value]),

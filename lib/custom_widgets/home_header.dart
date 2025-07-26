@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:padel_pro/controllers/auth%20controllers/auth_rolebase_controller.dart';
 import 'package:padel_pro/screens/notification_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../controllers/user_controller.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
-
+   HomeHeader({super.key});
+  final authController = Get.find<AuthController>();
   @override
   Widget build(BuildContext context) {
     final userController = Get.put(UserController());
@@ -54,6 +55,14 @@ class HomeHeader extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (context) => NotificationsScreen()),
                   );
+                },
+              ),
+
+              SizedBox(width: 8.w),
+              _iconButton(
+                icon: Icons.logout_outlined,
+                onTap: () {
+                  authController.logout();
                 },
               ),
             ],
