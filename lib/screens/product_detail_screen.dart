@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:padel_pro/controllers/product_controller.dart';
 
-import '../controllers/product_controller.dart';
+
 
 class ProductDetailScreen extends StatelessWidget {
   final controller = Get.find<ProductController>();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../controllers/ground_controller.dart';
+import 'package:padel_pro/controllers/ground_controller.dart';
 
 class PopularList extends StatelessWidget {
   final GroundController groundCtrl = Get.find();

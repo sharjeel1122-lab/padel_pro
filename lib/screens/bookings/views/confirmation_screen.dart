@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/bookingcontroller.dart';
 
+
 class ConfirmationScreen extends StatelessWidget {
   final double price;
   final BookingController controller = Get.find();

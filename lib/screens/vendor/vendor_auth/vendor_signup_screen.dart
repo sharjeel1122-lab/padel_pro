@@ -288,7 +288,7 @@ class VendorSignUpScreen extends StatelessWidget {
                           'cnic': _cnicController.text.trim(),
                           'ntn': _ntnController.text.trim(),
                           'city': _cityController.text.trim(),
-                          'address': _addressController.text.trim(),
+                          // 'address': _addressController.text.trim(),
                         }, _imagePath.value.isNotEmpty ? File(_imagePath.value) : null);
                       }
                     },

@@ -28,7 +28,7 @@ class VendorSignUpController extends BaseController {
           'An OTP has been sent to $email. Please verify your email to continue.',
         );
 
-        Get.to(() => EmailVerificationScreen());
+        Get.offAllNamed('/verify-your-email', arguments: email);
       } else {
         final message = response['message'] ?? 'Signup failed. Please try again.';
         showSnackbar('Signup Failed', message, isError: true);

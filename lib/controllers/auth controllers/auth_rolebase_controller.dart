@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-import 'package:padel_pro/screens/verification/email_verification_screen.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:padel_pro/services/user_login_api.dart';
 
-
 class AuthController extends GetxController {
+  final saveVendorId = GetStorage();
+
   final storage = const FlutterSecureStorage();
   final obscureText = true.obs; // Observable for password visibility
   final rememberMe = false.obs; // Observable for remember me
@@ -13,12 +14,12 @@ class AuthController extends GetxController {
 
   void toggleVisibility() {
     obscureText.toggle();
-    update(); // Notify listeners
+    update();
   }
 
   void toggleRememberMe() {
     rememberMe.toggle();
-    update(); // Notify listeners
+    update();
   }
 
   Future<void> login(String email, String password) async {
@@ -30,10 +31,16 @@ class AuthController extends GetxController {
       final token = response['token'];
       final user = response['user'];
       final role = user['role'];
+      final id = user['_id']; // Unique vendor ID from backend
 
       await storage.write(key: 'token', value: token);
       await storage.write(key: 'role', value: role);
       await storage.write(key: 'email', value: email);
+      final savedToken = await storage.read(key: 'token');
+      print('📦 Token stored in secure storage: $savedToken');
+      if (role.toLowerCase() == 'vendor') {
+        saveVendorId.write('vendorId', id); // ✅ Save vendor ID
+      }
 
       Get.snackbar(
         'Login Successful',
@@ -72,6 +79,8 @@ class AuthController extends GetxController {
     try {
       await storage.delete(key: 'token');
       await storage.delete(key: 'role');
+      saveVendorId.remove('vendorId'); // ✅ Clear vendorId on logout
+
       Get.snackbar(
         'Logged Out',
         'You have been successfully logged out',

@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
 // import 'package:google_fonts/google_fonts.dart';
-// import 'package:padel_pro/controllers/auth%20controllers/otp_controller.dart';
+// import 'package:padel_pro/vendors controllers/auth%20controllers/otp_controller.dart';
 //
 // class VerifyYourEmailScreen extends StatelessWidget {
 //   VerifyYourEmailScreen({super.key});

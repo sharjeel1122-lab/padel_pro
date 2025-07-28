@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../controllers/main_controller.dart';
+import 'package:padel_pro/controllers/main_controller.dart';
 import '../screens/booking_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/profile_screen/profile_screen.dart';

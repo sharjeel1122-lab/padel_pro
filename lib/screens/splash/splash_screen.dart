@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:padel_pro/controllers/splash_controller.dart';
 import 'package:padel_pro/screens/login_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import '../../controllers/splash_controller.dart';
 
 
 class OnboardingScreen extends StatelessWidget {

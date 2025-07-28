@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
 import 'package:padel_pro/Error%20Screen/error_screen_otp.dart';
+
+import 'package:padel_pro/screens/vendor/views/pending_approval_screen.dart';
+import 'package:padel_pro/screens/vendor/views/vendor_dashboard.dart';
 import '../screens/add_ground_screen.dart';
 import '../screens/admin/dashboard_screen.dart';
 import '../screens/admin/further_screens/add_vendor.dart';
@@ -16,7 +19,7 @@ import '../screens/profile_screen/edit_profile_screen.dart';
 import '../screens/sign_up.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/vendor/vendor_auth/vendor_signup_screen.dart';
-import '../screens/vendor/vendor_court_screen.dart';
+
 import '../screens/verification/email_verification_screen.dart';
 import '../screens/verification/verify_your_email.dart';
 import '../custom_widgets/main_screen_navigation.dart';
@@ -27,7 +30,7 @@ abstract class AppPages {
 
     GetPage(
       name: AppRoutes.INITIAL,
-      page: () =>  OnboardingScreen(),
+      page: () =>  MainScreenNavigation(),
     ),
     GetPage(
       name: AppRoutes.LOGIN,
@@ -53,10 +56,10 @@ abstract class AppPages {
       name: AppRoutes.ADMIN_DASHBOARD,
       page: () => AdminDashboardScreen(),
     ),
-    GetPage(
-      name: AppRoutes.VENDOR_LOGIN,
-      page: () => VendorCourtScreen(),
-    ),
+    // GetPage(
+    //   name: AppRoutes.VENDOR_LOGIN,
+    //   // page: () => VendorDashboard(),
+    // ),
     GetPage(
       name: AppRoutes.VENDOR_SIGNUP,
       page: () => VendorSignUpScreen(),
@@ -74,9 +77,14 @@ abstract class AppPages {
       page: () => AddVenueScreen(),
     ),
     GetPage(
-      name: AppRoutes.TOTAL_VENUES,
-      page: () => TotalVenuesScreen(),
+      name: AppRoutes.VENDOR_DASHBOARD,
+      page: () => DashboardView(),
     ),
+
+    // GetPage(
+    //   name: AppRoutes.TOTAL_VENUES,
+    //   page: () => TotalVenuesScreen(),
+    // ),
     GetPage(
       name: AppRoutes.TOTAL_VENDORS,
       page: () => TotalVendorsScreen(),
@@ -107,6 +115,10 @@ abstract class AppPages {
     GetPage(
       name: AppRoutes.VERIFY_YOUR_EMAIL,
       page: () => EmailVerificationScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.PENDING_SCREEN,
+      page: () => PendingApprovalScreen(contactNumber: '03014530509'),
     ),
   ];
 }

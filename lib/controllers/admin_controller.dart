@@ -1,4 +1,4 @@
-// controllers/admin_controller.dart
+// vendors controllers/admin_controller.dart
 import 'package:get/get.dart';
 
 class Vendor {

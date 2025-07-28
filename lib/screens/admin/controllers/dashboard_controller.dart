@@ -1,4 +1,4 @@
-// lib/screens/admin/controllers/dashboard_controller.dart
+// lib/screens/admin/vendors controllers/dashboard_controller.dart
 import 'package:get/get.dart';
 
 class DashboardController extends GetxController {

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import '../controllers/dashboard_controller.dart';
+import 'package:padel_pro/screens/admin/controllers/dashboard_controller.dart';
 
 class AddVenueScreen extends StatefulWidget {
   const AddVenueScreen({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:padel_pro/controllers/shop_controller.dart';
 
-import '../controllers/shop_controller.dart';
 import '../custom_widgets/recommended_shop_card.dart';
 import '../custom_widgets/search_bar_widget.dart';
 import '../custom_widgets/shop_list_card.dart';

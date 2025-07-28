@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:padel_pro/controllers/ground_controller.dart';
 import 'package:padel_pro/screens/ground_book_screen.dart';
-import '../../../controllers/ground_controller.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../controllers/image_slider_controller.dart';
