@@ -1,114 +1,107 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class ClubCard extends StatelessWidget {
   final String name;
   final String location;
   final int courts;
-  final VoidCallback onViewPressed;
+  final VoidCallback onView;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const ClubCard({
     super.key,
     required this.name,
     required this.location,
     required this.courts,
-    required this.onViewPressed,
+    required this.onView,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF162A3A),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 16)),
+              ),
+              const Icon(LucideIcons.grid, color: Colors.white54),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(location, style: const TextStyle(color: Colors.white70)),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(LucideIcons.layoutPanelTop,
+                  color: Colors.white60, size: 16),
+              const SizedBox(width: 6),
+              Text("$courts Courts",
+                  style: const TextStyle(color: Colors.white70)),
+            ],
+          ),
+          const Spacer(),
+          const Divider(color: Colors.white30),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
+                // Compact View button
+                ElevatedButton.icon(
+                  onPressed: onView,
+                  icon: const Icon(Icons.visibility, size: 16),
+                  label: const Text(
+                    "View",
+                    style: TextStyle(fontSize: 12),
                   ),
-                  child: Icon(Icons.sports_tennis, color: Colors.blue[700], size: 24),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        location,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.sports_cricket, size: 20, color: Colors.grey[600]),
-                    const SizedBox(width: 8),
-                    Text(
-                      '$courts ${courts == 1 ? 'Court' : 'Courts'}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: onViewPressed,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    minimumSize: const Size(50, 36),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  child: Text(
-                    'View Courts',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    ),
-                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Edit button
+                IconButton(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(0),
+                  splashRadius: 20,
+                ),
+
+                // Delete button
+                IconButton(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(0),
+                  splashRadius: 20,
                 ),
               ],
             ),
-          ],
-        ),
+          )
+
+        ],
       ),
     );
   }

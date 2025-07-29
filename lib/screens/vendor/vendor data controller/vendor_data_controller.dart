@@ -7,22 +7,25 @@
     final CreateVendorApi _apiService = CreateVendorApi();
     final clubs = <Map<String, dynamic>>[].obs;
     final isLoading = false.obs;
+    var playgrounds = [].obs;
 
     @override
     void onInit() {
       super.onInit();
-      // fetchVendorPlaygrounds();
+      fetchPlaygrounds();
     }
 
-    // Future<void> fetchVendorPlaygrounds() async {
-    //   try {
-    //     isLoading(true);
-    //     final response = await _apiService.getVendorPlaygrounds();
-    //     clubs.assignAll(response.map((club) => club as Map<String, dynamic>).toList());
-    //   } finally {
-    //     isLoading(false);
-    //   }
-    // }
+    void fetchPlaygrounds() async {
+      try {
+        isLoading.value = true;
+        final data = await _apiService.getVendorPlaygrounds();
+        playgrounds.value = data;
+      } catch (e) {
+        print("Error fetching playgrounds: $e");
+      } finally {
+        isLoading.value = false;
+      }
+    }
 
     Future<void> createNewPlayground(Map<String, dynamic> data, List<String> photoPaths) async {
       try {

@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 class CreateVendorApi {
-  final _baseUrl = 'http://192.168.0.102:3000';
+  final _baseUrl = 'http://10.248.1.249:3000';
   final _storage = const FlutterSecureStorage();
 
   // Get token from FlutterSecureStorage
@@ -92,7 +92,7 @@ class CreateVendorApi {
       final token = await _getToken();
       if (token == null) throw Exception("Unauthorized. Token missing or expired.");
 
-      final url = Uri.parse('$_baseUrl/api/v1/playground/vendor');
+      final url = Uri.parse('$_baseUrl/api/v1/playground/vendorsPlaygound');
 
       final response = await http.get(
         url,

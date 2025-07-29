@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class UserSignUpApi {
-  static const String _baseUrl = 'http://192.168.1.3:3000';
+  static const String _baseUrl = 'http://192.168.0.105:3000';
   Future<Map<String, dynamic>> signupUser({
     required String firstName,
     required String lastName,

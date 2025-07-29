@@ -55,6 +55,7 @@ dependencies:
   percent_indicator: ^4.2.5
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
+  lucide_icons: ^0.257.0
 
 dev_dependencies:
   flutter_test:

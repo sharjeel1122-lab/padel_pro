@@ -271,7 +271,7 @@ class CreatePlaygroundView extends StatelessWidget {
                       ),
                   ],
                 ),
-                _textField(court.courtNumberController, 'Court Number*'),
+                _textField(court.courtNumberController, 'Court Name*'),
                 _textField(
                   court.courtTypeController,
                   'Court Type (e.g., Padel)*',

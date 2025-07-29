@@ -30,7 +30,7 @@ abstract class AppPages {
 
     GetPage(
       name: AppRoutes.INITIAL,
-      page: () =>  MainScreenNavigation(),
+      page: () =>  OnboardingScreen(),
     ),
     GetPage(
       name: AppRoutes.LOGIN,
@@ -78,7 +78,7 @@ abstract class AppPages {
     ),
     GetPage(
       name: AppRoutes.VENDOR_DASHBOARD,
-      page: () => DashboardView(),
+      page: () => VendorDashboardScreen(),
     ),
 
     // GetPage(
