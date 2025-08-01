@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class UserLoginApi {
-  static const String _baseUrl = 'http://10.248.1.249:3000';
+  static const String _baseUrl = 'http://10.248.0.109:3000';
 
   static Future<Map<String, dynamic>> login(
     String email,
     String password,
   ) async {
-    print('🚀 Attempting login with email: $email');
+    print(' Attempting login with email: $email');
 
     try {
       final response = await http.post(
@@ -30,13 +30,18 @@ class UserLoginApi {
         }
 
         final token = data['token'];
-        final role =
-            data['user']['role'] ?? 'user';
+        final user = data['user'];
+        final role = user['role'] ?? 'user';
+        final id = user['id'];
 
         return {
           'token': token,
-          'user': {'role': role},
+          'user': {
+            'role': role,
+            'id': id,
+          },
         };
+
 
       } else {
         throw _handleError(response);

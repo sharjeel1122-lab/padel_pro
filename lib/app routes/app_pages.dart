@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:padel_pro/Error%20Screen/error_screen_otp.dart';
 
 import 'package:padel_pro/screens/vendor/views/pending_approval_screen.dart';
 import 'package:padel_pro/screens/vendor/views/vendor_dashboard.dart';
@@ -9,19 +8,16 @@ import '../screens/admin/further_screens/add_vendor.dart';
 import '../screens/admin/further_screens/add_venue.dart';
 import '../screens/admin/requests/admin_request_screen.dart';
 import '../screens/admin/total_vendors/total_vendors_screen.dart';
-import '../screens/admin/total_venues/total_venues_screen.dart';
 import '../screens/ground_explore_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/mpin screen/forget_mpin.dart';
 import '../screens/mpin screen/mpin_login.dart';
 import '../screens/password reset screens/reset_password_request.dart';
-import '../screens/profile_screen/edit_profile_screen.dart';
 import '../screens/sign_up.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/vendor/vendor_auth/vendor_signup_screen.dart';
 
 import '../screens/verification/email_verification_screen.dart';
-import '../screens/verification/verify_your_email.dart';
 import '../custom_widgets/main_screen_navigation.dart';
 import 'app_routes.dart';
 
@@ -64,10 +60,10 @@ abstract class AppPages {
       name: AppRoutes.VENDOR_SIGNUP,
       page: () => VendorSignUpScreen(),
     ),
-    GetPage(
-      name: AppRoutes.EDIT_PROFILE,
-      page: () => EditProfileScreen(),
-    ),
+    // GetPage(
+    //   name: AppRoutes.EDIT_PROFILE,
+    //   page: () => EditProfileScreen(),
+    // ),
     GetPage(
       name: AppRoutes.ADD_VENDOR,
       page: () => AddVendorScreen(),

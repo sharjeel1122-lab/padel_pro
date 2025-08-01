@@ -170,8 +170,9 @@ class VendorSignUpScreen extends StatelessWidget {
                   keyboardType: TextInputType.number,
                   maxLength: 4,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty)
+                    if (value == null || value.trim().isEmpty) {
                       return 'Required field';
+                    }
                     if (value.trim().length != 4 ||
                         !RegExp(r'^\d+$').hasMatch(value)) {
                       return 'Must be 4 digits';
@@ -186,8 +187,9 @@ class VendorSignUpScreen extends StatelessWidget {
                   icon: Icons.phone,
                   keyboardType: TextInputType.phone,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty)
+                    if (value == null || value.trim().isEmpty) {
                       return 'Required field';
+                    }
                     if (!RegExp(r'^[0-9]{11,}$').hasMatch(value)) {
                       return 'Invalid phone number';
                     }
@@ -201,8 +203,9 @@ class VendorSignUpScreen extends StatelessWidget {
                   icon: Icons.credit_card,
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty)
+                    if (value == null || value.trim().isEmpty) {
                       return 'Required field';
+                    }
                     if (value.trim().length != 13) return 'Must be 13 digits';
                     return null;
                   },

@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:padel_pro/controllers/auth%20controllers/otp_controller.dart';
 import 'package:padel_pro/controllers/auth%20controllers/vendor_signup_controller.dart';
-import 'package:padel_pro/controllers/vendor%20controllers/club_controller.dart';
 import 'package:padel_pro/screens/vendor/vendor%20data%20controller/vendor_data_controller.dart';
 import 'package:padel_pro/services/verify_otp_api.dart';
 import '../controllers/auth controllers/auth_rolebase_controller.dart';
@@ -13,8 +12,8 @@ import '../controllers/ground_controller.dart';
 import '../controllers/product_controller.dart';
 import '../controllers/splash_controller.dart';
 
+import '../screens/admin/controllers/dashboard_controller.dart';
 import '../screens/profile_screen/controller/profile_controller.dart';
-import '../screens/vendor/vendor_auth/vendor_signup_screen.dart';
 
 class AppBindings implements Bindings {
   @override

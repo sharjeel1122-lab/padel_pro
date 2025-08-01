@@ -1,9 +1,6 @@
 import 'dart:io';
 import 'package:get/get.dart';
-import 'package:padel_pro/screens/verification/email_verification_screen.dart';
-import 'package:padel_pro/screens/verification/verify_your_email.dart';
 import 'package:padel_pro/services/vendor_signup_api.dart';
-import '../../app routes/app_routes.dart';
 import 'auth_base_controller.dart';
 
 class VendorSignUpController extends BaseController {

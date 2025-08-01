@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 class CreateVendorApi {
-  final _baseUrl = 'http://10.248.1.249:3000';
+  final _baseUrl = 'http://10.248.0.109:3000';
   final _storage = const FlutterSecureStorage();
 
   // Get token from FlutterSecureStorage
@@ -86,32 +86,5 @@ class CreateVendorApi {
     }
   }
 
-  // Get all vendor's playgrounds
-  Future<List<dynamic>> getVendorPlaygrounds() async {
-    try {
-      final token = await _getToken();
-      if (token == null) throw Exception("Unauthorized. Token missing or expired.");
 
-      final url = Uri.parse('$_baseUrl/api/v1/playground/vendorsPlaygound');
-
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        return decoded['data'] ?? [];
-      } else {
-        throw Exception(
-          '❌ Failed to fetch playgrounds. Status: ${response.statusCode}, Body: ${response.body}',
-        );
-      }
-    } catch (e) {
-      print('Error in getVendorPlaygrounds API call: $e');
-      rethrow;
-    }
-  }
 }

@@ -19,7 +19,7 @@ class MainScreenNavigation extends StatelessWidget {
       const HomeScreen(),
       // ShopScreen(),
        BookingScreen(),
-      const Profile(),
+       ProfileScreen(),
     ];
 
     return Scaffold(

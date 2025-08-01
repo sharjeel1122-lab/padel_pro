@@ -1,35 +1,38 @@
 import 'package:get/get.dart';
 
+import '../../../services/profile api/user_profile_api.dart';
+
 class ProfileController extends GetxController {
-  var firstName = ''.obs;
-  var lastName = ''.obs;
-  var email = ''.obs;
-  var phone = ''.obs;
-  var city = ''.obs;
-  var gender = ''.obs;
+  final ProfileApi _profileApi = ProfileApi();
 
-  void loadUserData(Map<String, dynamic> user) {
-    firstName.value = user['firstName'] ?? '';
-    lastName.value = user['lastName'] ?? '';
-    email.value = user['email'] ?? '';
-    phone.value = user['phone'] ?? '';
-    city.value = user['city'] ?? '';
-    gender.value = user['gender'] ?? '';
+  var isLoading = true.obs;
+  var profileData = {}.obs;
+  var errorMessage = ''.obs;
+
+  @override
+  void onInit() {
+    fetchProfile();
+    super.onInit();
   }
 
-  void updateProfile({
-    required String firstName,
-    required String lastName,
-    required String phone,
-    required String city,
-    required String gender,
-  }) {
-    this.firstName.value = firstName;
-    this.lastName.value = lastName;
-    this.phone.value = phone;
-    this.city.value = city;
-    this.gender.value = gender;
+  Future<void> fetchProfile() async {
+    try {
+      isLoading(true);
+      final data = await _profileApi.getProfile();
 
-
+      if (data != null) {
+        profileData.value = data;
+        errorMessage.value = '';
+      } else {
+        errorMessage.value = 'Failed to load profile data';
+      }
+    } catch (e) {
+      errorMessage.value = 'Error: ${e.toString()}';
+    } finally {
+      isLoading(false);
+    }
   }
+
+  String get fullName => '${profileData['firstName']} ${profileData['lastName']}';
+  bool get isVendor => profileData['role'] == 'vendor';
 }
