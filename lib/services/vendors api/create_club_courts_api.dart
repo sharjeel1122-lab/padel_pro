@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 class CreateVendorApi {
-  final _baseUrl = 'http://10.248.0.109:3000';
+  final _baseUrl = 'http://192.168.1.6:3000';
   final _storage = const FlutterSecureStorage();
 
   // Get token from FlutterSecureStorage

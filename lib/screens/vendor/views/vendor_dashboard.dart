@@ -16,15 +16,11 @@ import 'package:padel_pro/services/vendors%20api/fetch_club_courts_api.dart';
 class VendorDashboardScreen extends StatefulWidget {
   const VendorDashboardScreen({super.key});
 
-
-
   @override
   State<VendorDashboardScreen> createState() => _VendorDashboardScreenState();
 }
 
 class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
-
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(VendorDashboardController());
@@ -36,10 +32,6 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       super.initState();
       _controllerProfile.fetchProfile();
     }
-
-
-
-
 
     return Scaffold(
       drawer: _buildPremiumDrawer(),
@@ -69,14 +61,19 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "Welcome, ${_controllerProfile.fullName ?? 'Vendor'}",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                          Obx(() {
+                            final name =
+                                _controllerProfile.fullName ?? 'Vendor';
+                            return Text(
+                              "Welcome, $name",
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            );
+                          }),
+
                           SizedBox(height: 4),
                           Text(
                             "Manage Your Clubs.",
@@ -139,8 +136,25 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                 const SizedBox(height: 12),
                 // Club Cards
                 Expanded(
-                  child: Obx(
-                    () => GridView.builder(
+                  child: Obx(() {
+                    if (controller.isLoading.value) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                        ),
+                      );
+                    }
+
+                    if (controller.clubs.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "No clubs found.",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      );
+                    }
+
+                    return GridView.builder(
                       itemCount: controller.clubs.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: isWide ? 3 : 2,
@@ -153,15 +167,16 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         return ClubCard(
                           name: club['name'],
                           location: club['location'],
-                          courts: club['courts'],
+                          courts: (club['courts'] as List).length,
                           onView: () => controller.viewCourts(index),
                           onEdit: () => controller.editClub(index),
                           onDelete: () => controller.deleteClub(index),
                         );
                       },
-                    ),
-                  ),
-                ),
+                    );
+                  }),
+                )
+
               ],
             ),
           );
@@ -230,7 +245,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   const SizedBox(height: 15),
                   // Vendor Name
                   Text(
-                    _controllerProfile.fullName,
+                    _controllerProfile.fullName ?? "Name",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -242,7 +257,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   Padding(
                     padding: const EdgeInsets.all(9.0),
                     child: Text(
-                        _controllerProfile.profileData['email'] ?? "Your email",
+                      _controllerProfile.profileData['email'] ?? "Your email",
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.8),
                         fontSize: 14,

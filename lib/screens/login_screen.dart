@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:padel_pro/screens/profile_screen/controller/profile_controller.dart';
 
 
 import '../controllers/auth controllers/auth_rolebase_controller.dart';
@@ -13,6 +14,7 @@ class LoginScreen extends StatelessWidget {
   final _passwordController = TextEditingController();
 
   final AuthController authController = Get.find<AuthController>();
+
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +122,7 @@ class LoginScreen extends StatelessWidget {
                         _passwordController.text.trim(),
                       );
                     }
+
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF072A40),

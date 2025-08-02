@@ -7,14 +7,34 @@ import 'package:padel_pro/services/vendors%20api/fetch_club_courts_api.dart';
 
 class VendorDashboardController extends GetxController {
   final FetchVendorApi _fetchVendorApi = FetchVendorApi();
+  final RxList<Map<String, dynamic>> playgrounds = <Map<String, dynamic>>[].obs;
+  final RxBool isLoading = false.obs;
+
   var clubs = <Map<String, dynamic>>[].obs;
-  var isLoading = false.obs;
+
 
   @override
   void onInit() {
     super.onInit();
-    // fetchClubs();
+    fetchPlaygrounds();
   }
+
+  void fetchPlaygrounds() async {
+    try {
+      isLoading.value = true;
+      final data = await _fetchVendorApi.getVendorPlaygrounds();
+      playgrounds.value = List<Map<String, dynamic>>.from(data);
+
+      // ⬅️ Add this line to populate the clubs list
+      clubs.value = playgrounds;
+    } catch (e) {
+      print('Error: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
 
   // void fetchClubs() async {
   //   try {
@@ -71,26 +91,26 @@ class VendorDashboardController extends GetxController {
   //   }
   // }
 
-  void loadClubs() {
-    clubs.value = [
-      {
-        'name': 'Main Gulberg Club',
-        'location': 'Lahore',
-        'courts': 3,
-      },
-      {
-        'name': 'DHA Sports Arena',
-        'location': 'Lahore',
-        'courts': 1,
-      },
-      {
-        'name': 'DHA Sports Arena',
-        'location': 'Lahore',
-        'courts': 5,
-      },
-
-    ];
-  }
+  // void loadClubs() {
+  //   clubs.value = [
+  //     {
+  //       'name': 'Main Gulberg Club',
+  //       'location': 'Lahore',
+  //       'courts': 3,
+  //     },
+  //     {
+  //       'name': 'DHA Sports Arena',
+  //       'location': 'Lahore',
+  //       'courts': 1,
+  //     },
+  //     {
+  //       'name': 'DHA Sports Arena',
+  //       'location': 'Lahore',
+  //       'courts': 5,
+  //     },
+  //
+  //   ];
+  // }
 
   void addClub() {
     Get.to(CreatePlaygroundView());

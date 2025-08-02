@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class UserLoginApi {
-  static const String _baseUrl = 'http://10.248.0.109:3000';
+  static const String _baseUrl = 'http://192.168.1.6:3000';
 
   static Future<Map<String, dynamic>> login(
     String email,

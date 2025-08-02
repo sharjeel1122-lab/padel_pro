@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'package:padel_pro/screens/vendor/vendor%20data%20controller/vendor_data_controller.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../admin/controllers/dashboard_controller.dart';
 
 class Pricing {
   final TextEditingController priceController = TextEditingController();

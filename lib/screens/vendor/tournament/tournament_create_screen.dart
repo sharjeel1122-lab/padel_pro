@@ -22,6 +22,8 @@ class CreateTournamentController extends GetxController {
 class CreateTournamentScreen extends StatelessWidget {
   final controller = Get.put(CreateTournamentController());
 
+ CreateTournamentScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

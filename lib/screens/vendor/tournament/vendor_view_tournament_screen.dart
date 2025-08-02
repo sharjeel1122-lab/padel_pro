@@ -78,6 +78,8 @@ class TournamentController extends GetxController {
 class ViewTournamentsScreen extends StatelessWidget {
   final controller = Get.put(TournamentController());
 
+ ViewTournamentsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
