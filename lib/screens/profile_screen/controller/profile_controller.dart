@@ -33,6 +33,11 @@ class ProfileController extends GetxController {
     }
   }
 
-  String get fullName => '${profileData['firstName']} ${profileData['lastName']}';
+  String get fullName {
+    final first = profileData['firstName'] ?? '';
+    final last = profileData['lastName'] ?? '';
+    return '$first $last'.trim();
+  }
+
   bool get isVendor => profileData['role'] == 'vendor';
 }

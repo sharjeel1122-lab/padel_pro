@@ -25,6 +25,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   Widget build(BuildContext context) {
     final controller = Get.put(VendorDashboardController());
     final authController = Get.put(AuthController());
+
     final ProfileController _controllerProfile = Get.put(ProfileController());
 
     @override
@@ -62,8 +63,17 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Obx(() {
-                            final name =
-                                _controllerProfile.fullName ?? 'Vendor';
+                            if (_controllerProfile.isLoading.value) {
+                              return const SizedBox(
+                                height: 20,
+                                child: LinearProgressIndicator(color: Colors.white),
+                              );
+                            }
+
+                            final name = _controllerProfile.fullName.isNotEmpty
+                                ? _controllerProfile.fullName
+                                : 'Vendor';
+
                             return Text(
                               "Welcome, $name",
                               style: const TextStyle(
@@ -73,6 +83,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                               ),
                             );
                           }),
+
 
                           SizedBox(height: 4),
                           Text(
@@ -104,17 +115,25 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   children: [
                     Icon(Icons.location_on, color: Colors.white70),
                     SizedBox(width: 8),
-                    Text(
-                      _controllerProfile.profileData['city'],
-                      style: TextStyle(color: Colors.white70),
-                    ),
+                    Obx(() {
+                      final city = _controllerProfile.profileData['city'] ?? 'Your city';
+                      return Text(
+                        city,
+                        style: const TextStyle(color: Colors.white70),
+                      );
+                    }),
+
                   ],
                 ),
                 const SizedBox(height: 16),
                 // Search Bar
+
                 TextField(
+                  controller: controller.searchController,
+                  onChanged: (_)=>  controller.onSearchChanged(),
                   decoration: InputDecoration(
-                    hintText: "Search clubs...",
+
+                    hintText: "Search clubs by name or location...",
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
                     fillColor: Colors.white,
@@ -122,8 +141,32 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
+
+                    suffixIcon: controller.searchController.text.isNotEmpty
+                        ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        controller.searchController.clear();
+                        controller.onSearchChanged();
+                      },
+                    )
+                        : null,
+
                   ),
                 ),
+
+                // TextField(
+                //   decoration: InputDecoration(
+                //     hintText: "Search clubs...",
+                //     prefixIcon: const Icon(Icons.search),
+                //     filled: true,
+                //     fillColor: Colors.white,
+                //     border: OutlineInputBorder(
+                //       borderRadius: BorderRadius.circular(12),
+                //       borderSide: BorderSide.none,
+                //     ),
+                //   ),
+                // ),
                 const SizedBox(height: 20),
                 const Text(
                   "My Clubs",
@@ -155,7 +198,11 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                     }
 
                     return GridView.builder(
-                      itemCount: controller.clubs.length,
+                      // itemCount: controller.clubs.length,
+                      itemCount: controller.filteredClubs.length,
+
+
+
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: isWide ? 3 : 2,
                         mainAxisExtent: 210,
@@ -163,7 +210,9 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         mainAxisSpacing: 12,
                       ),
                       itemBuilder: (context, index) {
-                        final club = controller.clubs[index];
+                        // final club = controller.clubs[index];
+                        final club = controller.filteredClubs[index];
+
                         return ClubCard(
                           name: club['name'],
                           location: club['location'],
@@ -184,6 +233,9 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       ),
     );
   }
+
+
+
 
   Widget _buildPremiumDrawer() {
     final ProfileController _controllerProfile = Get.put(ProfileController());

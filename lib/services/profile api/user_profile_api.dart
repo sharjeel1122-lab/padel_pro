@@ -20,7 +20,7 @@ class ProfileApi {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print("Profile Data: ${data['data']}"); // 👈 prints to console
+        print("Profile Data: ${data['data']}");
         return data['data'];
       } else {
         print("Failed to fetch profile: ${response.body}");

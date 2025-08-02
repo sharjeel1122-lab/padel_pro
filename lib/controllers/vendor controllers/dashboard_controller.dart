@@ -9,6 +9,9 @@ class VendorDashboardController extends GetxController {
   final FetchVendorApi _fetchVendorApi = FetchVendorApi();
   final RxList<Map<String, dynamic>> playgrounds = <Map<String, dynamic>>[].obs;
   final RxBool isLoading = false.obs;
+  var filteredClubs = <Map<String, dynamic>>[].obs;
+  final TextEditingController searchController = TextEditingController();
+
 
   var clubs = <Map<String, dynamic>>[].obs;
 
@@ -17,6 +20,8 @@ class VendorDashboardController extends GetxController {
   void onInit() {
     super.onInit();
     fetchPlaygrounds();
+    searchController.addListener(onSearchChanged);
+
   }
 
   void fetchPlaygrounds() async {
@@ -24,15 +29,32 @@ class VendorDashboardController extends GetxController {
       isLoading.value = true;
       final data = await _fetchVendorApi.getVendorPlaygrounds();
       playgrounds.value = List<Map<String, dynamic>>.from(data);
-
-      // ⬅️ Add this line to populate the clubs list
       clubs.value = playgrounds;
+      filteredClubs.assignAll(clubs);
     } catch (e) {
       print('Error: $e');
     } finally {
       isLoading.value = false;
     }
   }
+
+
+  void onSearchChanged() {
+    final query = searchController.text.toLowerCase();
+
+    if (query.isEmpty) {
+      filteredClubs.assignAll(clubs);
+    } else {
+      filteredClubs.assignAll(
+        clubs.where((club) {
+          final name = (club['name'] ?? '').toString().toLowerCase();
+          final location = (club['location'] ?? '').toString().toLowerCase();
+          return name.contains(query) || location.contains(query);
+        }).toList(),
+      );
+    }
+  }
+
 
 
 
