@@ -139,12 +139,44 @@ class VendorDashboardController extends GetxController {
   }
 
   void editClub(int index) {
-    // Logic to edit
+
   }
 
-  void deleteClub(int index) {
    // Logic to delete
-  }
+    void deleteClub(int index) async {
+      final club = filteredClubs[index];
+
+      Get.defaultDialog(
+        title: "Delete Club",
+        middleText: "Are you sure you want to delete '${club['name']}'?",
+        textCancel: "Cancel",
+        textConfirm: "Delete",
+        confirmTextColor: Colors.white,
+        buttonColor: Colors.red,
+        onConfirm: () async {
+          Get.back(); // close the dialog first
+
+          try {
+            // Call backend delete API
+            await _fetchVendorApi.deletePlaygroundById(club['_id']);
+
+            //  Remove from both lists
+            clubs.removeWhere((c) => c['_id'] == club['_id']);
+            filteredClubs.removeAt(index);
+
+            Get.snackbar("Deleted", "Club deleted successfully.",
+                backgroundColor: Colors.green, colorText: Colors.white);
+          } catch (e) {
+            Get.snackbar("Error", "Failed to delete club.",
+                backgroundColor: Colors.red, colorText: Colors.white);
+          }
+        },
+        onCancel: () => Get.back(),
+      );
+    }
+
+
+
 
   void viewCourts(int index) {
     // Navigate to courts screen

@@ -43,4 +43,29 @@ class FetchVendorApi {
       rethrow;
     }
   }
+
+
+  //Delete Playground API
+
+  Future<void> deletePlaygroundById(String id) async {
+    final token = await _storage.read(key: 'token'); // ✅ get token
+    final uri = Uri.parse('$_baseUrl/api/v1/playground/delete/$id'); // ✅ make sure this matches your actual endpoint
+
+    final response = await http.delete(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete playground');
+    }
+  }
+
+
+
+
+
 }

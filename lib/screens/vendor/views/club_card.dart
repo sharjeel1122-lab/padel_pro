@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:get/get.dart';
+import 'package:padel_pro/controllers/vendor%20controllers/dashboard_controller.dart';
 
 class ClubCard extends StatelessWidget {
   final String name;
@@ -9,7 +11,7 @@ class ClubCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const ClubCard({
+  ClubCard({
     super.key,
     required this.name,
     required this.location,
@@ -18,6 +20,8 @@ class ClubCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
   });
+
+  final controller = Get.put(VendorDashboardController());
 
   @override
   Widget build(BuildContext context) {

@@ -193,7 +193,7 @@ class ViewTournamentsScreen extends StatelessWidget {
                         tournament.status.toUpperCase(),
                         style: TextStyle(
                           color: isUpcoming
-                              ? Colors.blueAccent
+                              ? Colors.white
                               : isCompleted
                               ? Colors.greenAccent
                               : Colors.orangeAccent,
@@ -265,7 +265,7 @@ class ViewTournamentsScreen extends StatelessWidget {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           TextButton(
             onPressed: () => controller.editTournament(tournamentId),
@@ -275,27 +275,47 @@ class ViewTournamentsScreen extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Icon(Icons.edit, size: 18,color: Colors.white,),
+                Icon(Icons.image_outlined, size: 18,color: Colors.white,),
                 SizedBox(width: 5),
-                Text('Edit',style: TextStyle(color:Colors.white),),
+                Text('View Post',style: TextStyle(color:Colors.white),),
               ],
             ),
           ),
-          const SizedBox(width: 10),
-          TextButton(
-            onPressed: () => controller.deleteTournament(tournamentId),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.redAccent,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.delete, size: 18),
-                SizedBox(width: 5),
-                Text('Delete'),
-              ],
-            ),
-          ),
+
+          Expanded(child: Row(    mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => controller.editTournament(tournamentId),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blueAccent,
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.edit, size: 18,color: Colors.white,),
+                    SizedBox(width: 5),
+                    Text('Edit',style: TextStyle(color:Colors.white),),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              TextButton(
+                onPressed: () => controller.deleteTournament(tournamentId),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.redAccent,
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.delete, size: 18),
+                    SizedBox(width: 5),
+                    Text('Delete'),
+                  ],
+                ),
+              ),
+            ],
+          ))
+
         ],
       ),
     );
