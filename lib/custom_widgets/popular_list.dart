@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:padel_pro/controllers/ground_controller.dart';
+import 'package:padel_pro/screens/user/views/user_allclub_screen.dart';
 
 class PopularList extends StatelessWidget {
   final GroundController groundCtrl = Get.find();
@@ -28,7 +29,9 @@ class PopularList extends StatelessWidget {
                   style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                 ),
                 TextButton(
-                  onPressed: () {}, // Optional: go to full list
+                  onPressed: () {
+                    Get.to(UserClubScreen());
+                  }, // Optional: go to full list
                   child: Text('See All', style: TextStyle(color: Color(0xFF072A40))),
                 ),
               ],

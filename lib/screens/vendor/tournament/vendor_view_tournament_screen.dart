@@ -11,6 +11,7 @@ class Tournament {
   final String location;
   final String status; // upcoming, ongoing, completed
   final int participants;
+  final String type; // Men's, Women's, Mixed
 
   Tournament({
     required this.id,
@@ -20,6 +21,7 @@ class Tournament {
     required this.location,
     required this.status,
     required this.participants,
+    required this.type,
   });
 }
 
@@ -39,6 +41,7 @@ class TournamentController extends GetxController {
         location: 'Padel Club, Lahore',
         status: 'upcoming',
         participants: 32,
+        type: 'Men\'s',
       ),
       Tournament(
         id: '2',
@@ -48,6 +51,7 @@ class TournamentController extends GetxController {
         location: 'Sports Complex, Islamabad',
         status: 'upcoming',
         participants: 24,
+        type: 'Mixed',
       ),
       Tournament(
         id: '3',
@@ -57,6 +61,7 @@ class TournamentController extends GetxController {
         location: 'Padel Arena, Karachi',
         status: 'completed',
         participants: 48,
+        type: 'Women\'s',
       ),
     ]);
   }
@@ -78,7 +83,7 @@ class TournamentController extends GetxController {
 class ViewTournamentsScreen extends StatelessWidget {
   final controller = Get.put(TournamentController());
 
- ViewTournamentsScreen({super.key});
+  ViewTournamentsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +97,7 @@ class ViewTournamentsScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => Get.to( CreateTournamentScreen()),
+            onPressed: () => Get.to(CreateTournamentScreen()),
             tooltip: 'Create New Tournament',
           ),
         ],
@@ -213,6 +218,17 @@ class ViewTournamentsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 15),
+                Row(
+                  children: [
+                    const Icon(Icons.category, size: 16, color: Colors.white70),
+                    const SizedBox(width: 5),
+                    Text(
+                      tournament.type,
+                      style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     const Icon(Icons.location_on, size: 16, color: Colors.white70),

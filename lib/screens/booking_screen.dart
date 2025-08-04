@@ -1,13 +1,22 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:padel_pro/custom_widgets/home_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../controllers/auth controllers/auth_rolebase_controller.dart';
+import '../controllers/user_controller.dart';
 import 'bookings/controllers/bookingcontroller.dart';
 import 'bookings/views/confirmation_screen.dart';
+import 'notification_screen.dart';
+import 'profile_screen/controller/profile_controller.dart';
 
 class BookingScreen extends StatelessWidget {
   final controller = Get.put(BookingController());
+  final ProfileController _controllerProfile = Get.put(ProfileController());
+  final userController = Get.put(UserController());
+  final authController = Get.find<AuthController>();
   final courts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
   final durations = [30, 60, 90, 120, 150, 180];
   final timeSlots = [
@@ -65,14 +74,126 @@ class BookingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(appBar:
+      AppBar(
+        surfaceTintColor: Colors.white,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title:  HomeHeader(),
+        toolbarHeight: 70.h,
+      ),
       backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(16),
-          child: Column(
+          child:
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Column(
+              //   children: [
+              //     Padding(
+              //       padding: const EdgeInsets.only(top: 15, left: 3, right: 10),
+              //       child: Row(
+              //         children: [
+              //           CircleAvatar(
+              //               radius: 20.r, backgroundImage: AssetImage('assets/man.jpg')),
+              //           SizedBox(width: 12.w),
+              //           Expanded(
+              //             child: Obx(() => Column(
+              //               crossAxisAlignment: CrossAxisAlignment.start,
+              //               children: [
+              //                 Obx(() {
+              //                   if (_controllerProfile.isLoading.value) {
+              //                     return const SizedBox(
+              //                       height: 5,
+              //                       child: LinearProgressIndicator(
+              //                           color: Colors.white),
+              //                     );
+              //                   }
+              //
+              //                   final name = _controllerProfile.fullName.isNotEmpty
+              //                       ? _controllerProfile.fullName
+              //                       : 'Name...';
+              //
+              //                   return Text(
+              //                     "$name",
+              //                     style: const TextStyle(
+              //                       fontSize: 22,
+              //                       fontWeight: FontWeight.bold,
+              //                       color: Color(0xFF0C1E2C),
+              //                     ),
+              //                   );
+              //                 }),
+              //
+              //                 // Text(userController.username.value,
+              //                 //     style: TextStyle(
+              //                 //         fontSize: 16.sp, fontWeight: FontWeight.bold)),
+              //
+              //
+              //                 SizedBox(height: 2.h),
+              //                 Row(
+              //                   children: [
+              //                     Icon(Icons.location_on,
+              //                         size: 14.sp, color: Colors.grey),
+              //                     SizedBox(width: 4.w),
+              //                     Expanded(
+              //                       child: Text(userController.location.value,
+              //                           overflow: TextOverflow.ellipsis,
+              //                           style: TextStyle(
+              //                               fontSize: 12.sp, color: Colors.grey)),
+              //                     ),
+              //                   ],
+              //                 ),
+              //               ],
+              //             )),
+              //           ),
+              //
+              //           SizedBox(width: 8.w),
+              //           _iconButton(
+              //             icon: Icons.notifications_none,
+              //             onTap: () {
+              //               Navigator.push(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                     builder: (context) => NotificationsScreen()),
+              //               );
+              //             },
+              //           ),
+              //
+              //           SizedBox(width: 8.w),
+              //           _iconButton(
+              //             icon: Icons.logout_outlined,
+              //             onTap: () {
+              //               authController.logout();
+              //             },
+              //           ),
+              //         ],
+              //       ),
+              //     ),
+              //
+              //     // Show search field if toggled
+              //     Obx(() => userController.isSearching.value
+              //         ? Padding(
+              //       padding: const EdgeInsets.only(top: 12.0, left: 12, right: 12),
+              //       child: TextField(
+              //         onChanged: userController.updateSearchText,
+              //         decoration: InputDecoration(
+              //           hintText: "Search venue...",
+              //           prefixIcon: Icon(Icons.search),
+              //           filled: true,
+              //           fillColor: Colors.grey.shade100,
+              //           border: OutlineInputBorder(
+              //             borderRadius: BorderRadius.circular(12),
+              //             borderSide: BorderSide.none,
+              //           ),
+              //         ),
+              //       ),
+              //     )
+              //         : SizedBox.shrink()),
+              //   ],
+              // ),
               // Court Images
               FadeIn(
                 duration: Duration(milliseconds: 500),
@@ -523,4 +644,18 @@ class BookingScreen extends StatelessWidget {
       default: return '';
     }
   }
+  // Widget _iconButton({required IconData icon, required VoidCallback onTap}) {
+  //   return Container(
+  //     width: 37.w,
+  //     height: 37.w,
+  //     decoration: BoxDecoration(
+  //       shape: BoxShape.circle,
+  //       border: Border.all(color: Colors.grey.shade400, width: 0.5),
+  //     ),
+  //     child: IconButton(
+  //       onPressed: onTap,
+  //       icon: Icon(icon, size: 20.sp, color: Colors.black),
+  //     ),
+  //   );
+  // }
 }

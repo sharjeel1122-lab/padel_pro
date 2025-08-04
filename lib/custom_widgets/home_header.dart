@@ -4,10 +4,13 @@ import 'package:padel_pro/controllers/auth%20controllers/auth_rolebase_controlle
 import 'package:padel_pro/screens/notification_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../controllers/user_controller.dart';
+import '../screens/profile_screen/controller/profile_controller.dart';
 
 class HomeHeader extends StatelessWidget {
    HomeHeader({super.key});
   final authController = Get.find<AuthController>();
+
+   final ProfileController _controllerProfile = Get.put(ProfileController());
   @override
   Widget build(BuildContext context) {
     final userController = Get.put(UserController());
@@ -25,9 +28,34 @@ class HomeHeader extends StatelessWidget {
                 child: Obx(() => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(userController.username.value,
-                        style: TextStyle(
-                            fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                    Obx(() {
+                      if (_controllerProfile.isLoading.value) {
+                        return const SizedBox(
+                          height: 5,
+                          child: LinearProgressIndicator(
+                              color: Colors.white),
+                        );
+                      }
+
+                      final name = _controllerProfile.fullName.isNotEmpty
+                          ? _controllerProfile.fullName
+                          : 'Name...';
+
+                      return Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0C1E2C),
+                        ),
+                      );
+                    }),
+
+                    // Text(userController.username.value,
+                    //     style: TextStyle(
+                    //         fontSize: 16.sp, fontWeight: FontWeight.bold)),
+
+
                     SizedBox(height: 2.h),
                     Row(
                       children: [

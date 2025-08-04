@@ -6,7 +6,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:padel_pro/controllers/auth%20controllers/auth_rolebase_controller.dart';
 import 'package:padel_pro/controllers/vendor%20controllers/dashboard_controller.dart';
 import 'package:padel_pro/screens/profile_screen/controller/profile_controller.dart';
-import 'package:padel_pro/screens/profile_screen/profile_screen.dart';
+import 'package:padel_pro/screens/profile_screen/vendor_profile_screen.dart';
 import 'package:padel_pro/screens/vendor/tournament/tournament_create_screen.dart';
 import 'package:padel_pro/screens/vendor/tournament/vendor_view_tournament_screen.dart';
 import 'package:padel_pro/screens/vendor/views/club_card.dart';
@@ -65,8 +65,9 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                           Obx(() {
                             if (_controllerProfile.isLoading.value) {
                               return const SizedBox(
-                                height: 20,
-                                child: LinearProgressIndicator(color: Colors.white),
+                                height: 5,
+                                child: LinearProgressIndicator(
+                                    color: Colors.white),
                               );
                             }
 
@@ -296,30 +297,77 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   ),
                   const SizedBox(height: 15),
                   // Vendor Name
-                  Text(
-                    _controllerProfile.fullName ?? "Name",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Obx(() {
+                    if (_controllerProfile.isLoading.value) {
+                      return const SizedBox(
+                        height: 10,
+                        child: LinearProgressIndicator(
+                            color: Colors.white),
+                      );
+                    }
+
+                    final name = _controllerProfile.fullName.isNotEmpty
+                        ? _controllerProfile.fullName
+                        : 'Your Name';
+
+                    return Text(
+                      " $name ",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    );
+                  }),
+                  // Text(
+                  //   _controllerProfile.fullName ?? "Name",
+                  //   style: TextStyle(
+                  //     color: Colors.white,
+                  //     fontSize: 20,
+                  //     fontWeight: FontWeight.bold,
+                  //   ),
+                  // ),
                   const SizedBox(height: 5),
                   // Vendor Email
                   Padding(
                     padding: const EdgeInsets.all(9.0),
-                    child: Text(
-                      _controllerProfile.profileData['email'] ?? "Your email",
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 14,
-                      ),
-                    ),
+                    child:   Obx(() {
+                      if (_controllerProfile.isLoading.value) {
+                        return const SizedBox(
+                          height: 10,
+                          child: LinearProgressIndicator(
+                              color: Colors.white),
+                        );
+                      }
+
+                      final email = _controllerProfile.profileData['email'].isNotEmpty
+                          ? _controllerProfile.profileData['email']
+                          : 'Email';
+
+                      return Text(
+                        "$email",
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      );
+                    }),
+
+
+
+                    // Text(
+                    //   _controllerProfile.profileData['email'] ?? "Your email",
+                    //   style: TextStyle(
+                    //     color: Colors.white.withOpacity(0.8),
+                    //     fontSize: 14,
+                    //   ),
+                    // ),
                   ),
                   const SizedBox(height: 15),
                   // View Profile Button
                   ElevatedButton(
-                    onPressed: () => Get.to(ProfileScreen()),
+                    onPressed: () => Get.to(VendorProfileScreen()),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       shape: RoundedRectangleBorder(

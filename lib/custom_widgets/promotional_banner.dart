@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:padel_pro/screens/user/views/user_allclub_screen.dart';
 
 class PromotionalBanner extends StatelessWidget {
   const PromotionalBanner({super.key});
@@ -32,7 +33,7 @@ class PromotionalBanner extends StatelessWidget {
                 SizedBox(height: 12.h),
                 ElevatedButton(
                   onPressed: () {
-                   Get.toNamed('/explore_grounds');
+                    Get.to(UserClubScreen());
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF072A40)),
                   child: Text('Book now', style: TextStyle(color: Colors.white)),

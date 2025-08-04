@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/screens/profile_screen/controller/profile_controller.dart';
 
-class ProfileScreen extends StatelessWidget {
+class VendorProfileScreen extends StatelessWidget {
   final ProfileController _controller = Get.put(ProfileController());
   final Color primaryColor = const Color(0xFF0C1E2C);
   final Color backgroundColor = Colors.white;
 
-  ProfileScreen({super.key});
+  VendorProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

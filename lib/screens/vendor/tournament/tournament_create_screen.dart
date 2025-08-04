@@ -13,6 +13,10 @@ class CreateTournamentController extends GetxController {
   final startTime = Rxn<TimeOfDay>();
   final coverPhoto = Rxn<File>();
 
+  // Add tournament type
+  final tournamentType = 'Men\'s'.obs;
+  final List<String> tournamentTypes = ['Men\'s', 'Women\'s', 'Mixed'];
+
   Future<void> pickCoverPhoto() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -32,7 +36,6 @@ class CreateTournamentController extends GetxController {
   void removeCoverPhoto() {
     coverPhoto.value = null;
   }
-
 }
 
 class CreateTournamentScreen extends StatelessWidget {
@@ -147,6 +150,8 @@ class CreateTournamentScreen extends StatelessWidget {
                     hint: 'Enter tournament name',
                     onChanged: (value) => controller.tournamentName.value = value,
                   ),
+                  const SizedBox(height: 20),
+                  _buildTournamentTypeDropdown(),
                   const SizedBox(height: 20),
                   _buildTextField(
                     label: 'Description',
@@ -281,6 +286,44 @@ class CreateTournamentScreen extends StatelessWidget {
           ),
           onChanged: onChanged,
         ),
+      ],
+    );
+  }
+
+  Widget _buildTournamentTypeDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Tournament Type',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+        const SizedBox(height: 8),
+        Obx(() => Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: DropdownButton<String>(
+            value: controller.tournamentType.value,
+            isExpanded: true,
+            dropdownColor: cardColor,
+            style: const TextStyle(color: Colors.white),
+            underline: const SizedBox(), // Remove default underline
+            items: controller.tournamentTypes.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                controller.tournamentType.value = newValue;
+              }
+            },
+          ),
+        )),
       ],
     );
   }
@@ -431,4 +474,5 @@ class CreateTournamentScreen extends StatelessWidget {
     if (picked != null) {
       controller.startTime.value = picked;
     }
-  }}
+  }
+}

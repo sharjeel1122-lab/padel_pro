@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthOtpService {
-  static const String _baseUrl = 'http://192.168.0.105:3000';
+  static const String _baseUrl = 'http://192.168.1.6:3000';
 
   Future<Map<String, dynamic>> verifyOtp({
     required String email,

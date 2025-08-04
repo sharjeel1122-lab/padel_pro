@@ -2,15 +2,20 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-class FetchVendorApi {
-  final _baseUrl = 'http://192.168.0.101:3000';
+class UserFetchAllClubsApi {
+  final String baseUrl = 'http://192.168.0.101:3000';
   final _storage = const FlutterSecureStorage();
 
-  // 🔐 Read token from secure storage
+  // 🔐 Get token
   Future<String?> _getToken() async => await _storage.read(key: 'token');
 
-  /// ✅ Fetch only playgrounds created by the logged-in vendor
-  Future<List<dynamic>> getVendorPlaygrounds() async {
+  /// ✅ Fetch all clubs with courts (User role)
+
+
+
+
+
+  Future<List<dynamic>> fetchAllPlaygrounds() async {
     try {
       final token = await _getToken();
 
@@ -18,7 +23,7 @@ class FetchVendorApi {
         throw Exception("❌ Missing token. Please log in again.");
       }
 
-      final url = Uri.parse('$_baseUrl/api/v1/playground/vendorsPlaygound');
+      final url = Uri.parse('$baseUrl/api/v1/playground/allPlaygorund');
       print('🔄 GET: $url');
 
       final response = await http.get(
@@ -31,7 +36,7 @@ class FetchVendorApi {
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        print('✅ Vendor playgrounds fetched: ${decoded['data']['count']}');
+        print('✅ All playgrounds fetched: ${decoded['data']['count']}');
         return decoded['data']['data']; // returns a List of playgrounds
       } else {
         throw Exception(
@@ -43,29 +48,4 @@ class FetchVendorApi {
       rethrow;
     }
   }
-
-
-  //Delete Playground API
-
-  Future<void> deletePlaygroundById(String id) async {
-    final token = await _storage.read(key: 'token'); // ✅ get token
-    final uri = Uri.parse('$_baseUrl/api/v1/playground/delete/$id'); // ✅ make sure this matches your actual endpoint
-
-    final response = await http.delete(
-      uri,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete playground');
-    }
-  }
-
-
-
-
-
 }
