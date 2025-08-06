@@ -50,32 +50,84 @@ class AdminRequestScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Requests Grid/List
-            Expanded(
-              child: Obx(() {
-                if (controller.requests.isEmpty) {
-                  return Center(
-                    child: Text(
-                      "No pending requests",
-                      style: GoogleFonts.poppins(color: Colors.white70),
-                    ),
-                  );
-                }
 
-                return GridView.builder(
-                  itemCount: controller.requests.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isWide ? 2 : 1,
-                    childAspectRatio: isWide ? 3 : 2.2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                  ),
-                  itemBuilder: (_, index) {
-                    final req = controller.requests[index];
-                    return _buildRequestCard(req, index);
-                  },
-                );
-              }),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await controller.fetchPendingVendors();
+                },
+                color: Colors.white,
+                backgroundColor: Color(0xFF0A3B5C),
+                child:  Obx(() {
+                // Show full screen loader only if it's loading and not currently refreshing
+                if (controller.isLoading.value && !controller.isRefreshing.value) {
+      return const Center(
+      child: CircularProgressIndicator(
+      strokeWidth: 3,
+      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      ),
+      );
+      }
+
+          // Wrap rest in RefreshIndicator
+          return RefreshIndicator(
+          onRefresh: () async {
+    await controller.fetchPendingVendors(isPullRefresh: true);
+    },
+      color: Colors.white,
+      backgroundColor: Color(0xFF0A3B5C),
+      child: controller.requests.isEmpty
+          ? ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 100),
+          Center(child: Text("No pending requests", style: TextStyle(color: Colors.white70))),
+        ],
+      )
+          : GridView.builder(
+        itemCount: controller.requests.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isWide ? 2 : 1,
+          childAspectRatio: isWide ? 3 : 2.2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+        ),
+        itemBuilder: (_, index) {
+          final req = controller.requests[index];
+          return _buildRequestCard(req, index);
+        },
+      ),
+    );
+  })
+
+    ),
             ),
+            // Expanded(
+            //   child: Obx(() {
+            //     if (controller.requests.isEmpty) {
+            //       return Center(
+            //         child: Text(
+            //           "No pending requests",
+            //           style: GoogleFonts.poppins(color: Colors.white70),
+            //         ),
+            //       );
+            //     }
+            //
+            //     return GridView.builder(
+            //       itemCount: controller.requests.length,
+            //       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            //         crossAxisCount: isWide ? 2 : 1,
+            //         childAspectRatio: isWide ? 3 : 2.2,
+            //         mainAxisSpacing: 16,
+            //         crossAxisSpacing: 16,
+            //       ),
+            //       itemBuilder: (_, index) {
+            //         final req = controller.requests[index];
+            //         return _buildRequestCard(req, index);
+            //       },
+            //     );
+            //   }),
+            // ),
           ],
         ),
       ),
@@ -116,6 +168,7 @@ class AdminRequestScreen extends StatelessWidget {
                     onConfirm: () {
                       controller.approveRequest(index);
                       Get.back();
+                      controller.fetchPendingVendors();
                       Get.snackbar(
                         "Approved",
                         "Request has been approved",
@@ -142,6 +195,7 @@ class AdminRequestScreen extends StatelessWidget {
                     onConfirm: () {
                       controller.declineRequest(index);
                       Get.back();
+                      controller.fetchPendingVendors();
                       Get.snackbar(
                         "Declined",
                         "Request has been declined",

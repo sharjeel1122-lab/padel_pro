@@ -1,16 +1,14 @@
-import 'dart:convert';
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:padel_pro/controllers/auth%20controllers/auth_rolebase_controller.dart';
 import 'package:padel_pro/controllers/vendor%20controllers/dashboard_controller.dart';
 import 'package:padel_pro/screens/profile_screen/controller/profile_controller.dart';
 import 'package:padel_pro/screens/profile_screen/vendor_profile_screen.dart';
-import 'package:padel_pro/screens/vendor/tournament/tournament_create_screen.dart';
 import 'package:padel_pro/screens/vendor/tournament/vendor_view_tournament_screen.dart';
 import 'package:padel_pro/screens/vendor/views/club_card.dart';
-import 'package:padel_pro/screens/vendor/views/fetch_test.dart';
 import 'package:padel_pro/services/vendors%20api/fetch_club_courts_api.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
@@ -24,15 +22,11 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(VendorDashboardController());
-    final authController = Get.put(AuthController());
+    Get.put(AuthController());
 
-    final ProfileController _controllerProfile = Get.put(ProfileController());
 
-    @override
-    void initState() {
-      super.initState();
-      _controllerProfile.fetchProfile();
-    }
+    final ProfileController controllerProfile = Get.put(ProfileController());
+
 
     return Scaffold(
       drawer: _buildPremiumDrawer(),
@@ -41,6 +35,12 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: const Color(0xFF0C1E2C),
         elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Icon(Icons.notification_add_outlined),
+          )
+        ],
         toolbarHeight: 40,
         centerTitle: true,
         title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
@@ -63,16 +63,17 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Obx(() {
-                            if (_controllerProfile.isLoading.value) {
+                            if (controllerProfile.isLoading.value) {
                               return const SizedBox(
                                 height: 5,
+                                width: 10,
                                 child: LinearProgressIndicator(
                                     color: Colors.white),
                               );
                             }
 
-                            final name = _controllerProfile.fullName.isNotEmpty
-                                ? _controllerProfile.fullName
+                            final name = controllerProfile.fullName.isNotEmpty
+                                ? controllerProfile.fullName
                                 : 'Vendor';
 
                             return Text(
@@ -95,7 +96,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       ),
                     ),
                     ElevatedButton.icon(
+
+
                       onPressed: controller.addClub,
+
                       icon: const Icon(Icons.add),
                       label: const Text(
                         "New Club",
@@ -109,7 +113,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         foregroundColor: Color(0xFF0C1E2C),
                       ),
                     ),
-                  ],
+
+
+
+          ],
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -117,7 +124,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                     Icon(Icons.location_on, color: Colors.white70),
                     SizedBox(width: 8),
                     Obx(() {
-                      final city = _controllerProfile.profileData['city'] ?? 'Your city';
+                      final city = controllerProfile.profileData['city'] ?? 'Your city';
                       return Text(
                         city,
                         style: const TextStyle(color: Colors.white70),
@@ -239,7 +246,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
 
 
   Widget _buildPremiumDrawer() {
-    final ProfileController _controllerProfile = Get.put(ProfileController());
+    final ProfileController controllerProfile = Get.put(ProfileController());
     return Drawer(
       width: MediaQuery.of(Get.context!).size.width * 0.8,
       shape: const RoundedRectangleBorder(
@@ -298,7 +305,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   const SizedBox(height: 15),
                   // Vendor Name
                   Obx(() {
-                    if (_controllerProfile.isLoading.value) {
+                    if (controllerProfile.isLoading.value) {
                       return const SizedBox(
                         height: 10,
                         child: LinearProgressIndicator(
@@ -306,8 +313,8 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       );
                     }
 
-                    final name = _controllerProfile.fullName.isNotEmpty
-                        ? _controllerProfile.fullName
+                    final name = controllerProfile.fullName.isNotEmpty
+                        ? controllerProfile.fullName
                         : 'Your Name';
 
                     return Text(
@@ -332,7 +339,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   Padding(
                     padding: const EdgeInsets.all(9.0),
                     child:   Obx(() {
-                      if (_controllerProfile.isLoading.value) {
+                      if (controllerProfile.isLoading.value) {
                         return const SizedBox(
                           height: 10,
                           child: LinearProgressIndicator(
@@ -340,8 +347,8 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         );
                       }
 
-                      final email = _controllerProfile.profileData['email'].isNotEmpty
-                          ? _controllerProfile.profileData['email']
+                      final email = controllerProfile.profileData['email'].isNotEmpty
+                          ? controllerProfile.profileData['email']
                           : 'Email';
 
                       return Text(
@@ -410,19 +417,26 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
 
                   _buildMenuItem(
                     icon: Icons.api,
-                    title: 'Fetch Test',
+                    title: 'My Bookings',
                     onTap: () async {
-                      try {
-                        final playgrounds = await FetchVendorApi()
-                            .getVendorPlaygrounds();
-                        for (var p in playgrounds) {
-                          print('🏟️ Playground: ${p["name"]}');
-                        }
-                      } catch (e) {
-                        print('❌ Error fetching vendor playgrounds: $e');
-                      }
+
                     },
                   ),
+                  // _buildMenuItem(
+                  //   icon: Icons.api,
+                  //   title: 'Fetch Test',
+                  //   onTap: () async {
+                  //     try {
+                  //       final playgrounds = await FetchVendorApi()
+                  //           .getVendorPlaygrounds();
+                  //       for (var p in playgrounds) {
+                  //         print('🏟️ Playground: ${p["name"]}');
+                  //       }
+                  //     } catch (e) {
+                  //       print('❌ Error fetching vendor playgrounds: $e');
+                  //     }
+                  //   },
+                  // ),
 
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),

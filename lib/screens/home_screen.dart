@@ -3,20 +3,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/controllers/user_controller.dart';
 import 'package:padel_pro/custom_widgets/home_header.dart';
-import 'package:padel_pro/screens/notification_screen.dart';
+import 'package:padel_pro/custom_widgets/quick_menu_card_card.dart';
 
 import '../controllers/auth controllers/auth_rolebase_controller.dart';
 import '../custom_widgets/popular_list.dart';
 import '../custom_widgets/promotional_banner.dart';
 import '../custom_widgets/sport_scroller.dart';
-import 'profile_screen/controller/profile_controller.dart';
 
 
 
 
 class HomeScreen extends StatelessWidget {
    HomeScreen({super.key});
-  final ProfileController _controllerProfile = Get.put(ProfileController());
    final userController = Get.put(UserController());
    final authController = Get.find<AuthController>();
 
@@ -43,6 +41,24 @@ class HomeScreen extends StatelessWidget {
               PromotionalBanner(),
               const SizedBox(height: 8),
               PopularList(),
+              QuickMenuCard(
+                title: "Open match",
+                subtitle: "If you are looking for players at your level",
+                imagePath: "assets/images/player.png",
+                gradientColors: [Colors.blue.shade400, Colors.blue.shade700],
+                onTap: () {
+                  // Navigate or show dialog
+                },
+              ),
+              QuickMenuCard(
+                title: "Tournaments",
+                subtitle: "If you are looking for players at your level",
+                imagePath: "assets/images/trophy.png",
+                gradientColors: [Colors.green.shade400, Colors.green.shade700],
+                onTap: () {
+                  // Navigate or show dialog
+                },
+              ),
 
             ],
           ),

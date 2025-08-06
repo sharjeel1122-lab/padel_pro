@@ -4,7 +4,7 @@
 
 
     <application
-        android:label="padel_pro"
+        android:label="Sports Click"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         >

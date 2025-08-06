@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -98,7 +100,7 @@ class UserClubScreen extends StatelessWidget {
   }
 
   Widget _buildCategories() {
-    final categories = ['All', 'Nearby', 'Popular', 'Indoor', 'Outdoor'];
+    final categories = ['All', 'DHA', 'Model Town' ,'Bahria Town'];
 
     return SizedBox(
       height: 40,
@@ -317,7 +319,7 @@ class UserClubScreen extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: ['All', 'Indoor', 'Outdoor', 'Synthetic', 'Clay'].map((type) {
+                children: ['All', 'Indoor', 'Outdoor', 'Panoramic', 'Crystal', 'Wall'].map((type) {
                   final isSelected = controller.selectedTypes.contains(type);
                   return FilterChip(
                     label: Text(type),
@@ -344,7 +346,7 @@ class UserClubScreen extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: ['Parking', 'Locker', 'Shower', 'Cafe', 'Shop'].map((facility) {
+                children: ['wifi', 'lockers', 'showers', 'cafe', 'parking'].map((facility) {
                   final isSelected = controller.selectedFacilities.contains(facility);
                   return FilterChip(
                     label: Text(facility),

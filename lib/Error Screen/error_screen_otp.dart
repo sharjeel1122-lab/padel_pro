@@ -18,7 +18,7 @@ class _ErrorScreenState extends State<ErrorScreen> {
 
   void _proceedToVerification() {
     if (_formKey.currentState!.validate()) {
-      final email = emailController.text.trim();
+      emailController.text.trim();
       Get.to(() => EmailVerificationScreen());
     }
   }

@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class VendorSignupApi {
-  static const String _baseUrl = 'http://192.168.0.105:3000';
+  // static const String _baseUrl = 'http://192.168.0.105:3000';
+  final String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+
   Future<Map<String, dynamic>> signupVendor(
     Map<String, dynamic> data,
     File? photo,

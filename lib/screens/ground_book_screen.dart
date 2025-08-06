@@ -62,10 +62,9 @@ class _GroundBookingScreenState extends State<GroundBookingScreen> {
                           onPrimary: Colors.white,
                           onSurface: Colors.black,
                         ),
-                        dialogBackgroundColor: Colors.white,
                         textButtonTheme: TextButtonThemeData(
                           style: TextButton.styleFrom(foregroundColor: Colors.black),
-                        ),
+                        ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
                       ),
                       child: child!,
                     );

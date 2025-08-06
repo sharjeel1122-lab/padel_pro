@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:padel_pro/screens/profile_screen/controller/profile_controller.dart';
 
 
 import '../controllers/auth controllers/auth_rolebase_controller.dart';

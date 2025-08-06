@@ -1,11 +1,23 @@
 // lib/screens/admin/vendors controllers/dashboard_controller.dart
+import 'dart:async';
+
 import 'package:get/get.dart';
+import 'package:padel_pro/services/admin%20api/admin_request_api.dart';
 
 class DashboardController extends GetxController {
-  var totalCourts = 1.obs;
-  var vendors = 1.obs;
-  var products = 10.obs;
-  var requests = 1.obs;
+  var totalCourts = 0.obs;
+  var vendors = 0.obs;
+  var products = 0.obs;
+  var requests = 0.obs;
+  Timer? refreshTimer;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadStats();
+    startAutoRefresh();
+  }
+
 
   final courts = <CourtModel>[
     CourtModel(name: "Green Arena", date: "2024-07-10", type: "Indoor"),
@@ -25,7 +37,34 @@ class DashboardController extends GetxController {
     );
     update();
   }
+
+  void startAutoRefresh() {
+    refreshTimer = Timer.periodic(const Duration(seconds: 15), (timer) {
+      loadStats(); // refresh every 15 seconds
+    });
+  }
+
+  //load states of stateGrid Admin
+  Future<void> loadStats() async {
+    try {
+      final pendingVendors = await AdminRequestApi.fetchPendingVendors();
+      requests.value = pendingVendors.length;
+
+      // You can also load other stats:
+      // totalCourts.value = await CourtApi.count();
+      // vendors.value = await VendorApi.count();
+      // products.value = await ProductApi.count();
+    } catch (e) {
+      print("Error Failed to load dashboard stats ${e}");
+    }
+  }
+
+
+
 }
+
+
+
 
 class CourtModel {
   final String name;

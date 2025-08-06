@@ -54,9 +54,14 @@ dependencies:
   geocoding: ^4.0.0
   percent_indicator: ^4.2.5
   shared_preferences: ^2.5.3
+  dio: ^5.8.0+1
+  http_parser: ^4.1.2
   uuid: ^4.5.1
   lucide_icons: ^0.257.0
   mime: ^2.0.0
+  flutter_rating_bar: ^4.0.1
+  confetti: ^0.8.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class UserSignUpApi {
-  static const String _baseUrl = 'http://192.168.1.6:3000';
+  // static const String _baseUrl = 'http://192.168.1.6:3000';
+  final String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+
   Future<Map<String, dynamic>> signupUser({
     required String firstName,
     required String lastName,

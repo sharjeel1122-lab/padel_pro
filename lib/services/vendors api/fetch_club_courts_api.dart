@@ -3,7 +3,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class FetchVendorApi {
-  final _baseUrl = 'http://192.168.0.101:3000';
+  // final _baseUrl = 'http://192.168.0.101:3000';
+  final String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+
   final _storage = const FlutterSecureStorage();
 
   // 🔐 Read token from secure storage

@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,16 +7,13 @@ import 'package:get/get.dart';
 import 'package:padel_pro/custom_widgets/home_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/auth controllers/auth_rolebase_controller.dart';
-import '../controllers/user_controller.dart';
-import 'bookings/controllers/bookingcontroller.dart';
-import 'bookings/views/confirmation_screen.dart';
-import 'notification_screen.dart';
-import 'profile_screen/controller/profile_controller.dart';
+import '../../../controllers/auth controllers/auth_rolebase_controller.dart';
+import '../../../controllers/user_controller.dart';
+import '../../bookings/controllers/bookingcontroller.dart';
+import '../../bookings/views/confirmation_screen.dart';
 
 class BookingScreen extends StatelessWidget {
   final controller = Get.put(BookingController());
-  final ProfileController _controllerProfile = Get.put(ProfileController());
   final userController = Get.put(UserController());
   final authController = Get.find<AuthController>();
   final courts = ['Court 1', 'Court 2', 'Court 3', 'Court 4'];
