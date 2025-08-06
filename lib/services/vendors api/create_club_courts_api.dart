@@ -1,95 +1,87 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
-
 class CreateVendorApi {
-  final _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
-  final _storage = const FlutterSecureStorage();
-  final Dio _dio = Dio();
-
+  final _baseUrl = 'http://192.168.1.9:3000';
+  // final _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+  final _storage = FlutterSecureStorage();
 
   Future<String?> _getToken() async {
     return await _storage.read(key: 'token');
   }
 
-  Future<void> createPlayground(
-      Map<String, dynamic> club, List<String> photoPaths) async {
+  Future<void> createPlayground(Map<String, dynamic> club, List<String> photoPaths) async {
     try {
       final token = await _getToken();
       if (token == null) throw Exception("Unauthorized: Token not found");
 
-      _dio.options.headers['Authorization'] = 'Bearer $token';
-
-      FormData formData = FormData();
+      final url = Uri.parse('$_baseUrl/api/v1/playground/createPlaygorund');
+      final request = http.MultipartRequest('POST', url);
+      request.headers['Authorization'] = 'Bearer $token';
 
       final jsonFields = ['facilities', 'courts'];
 
       club.forEach((key, value) {
         if (jsonFields.contains(key)) {
-          formData.fields.add(MapEntry(key, jsonEncode(value)));
+          try {
+            request.fields[key] = jsonEncode(value);
+          } catch (_) {
+            throw Exception('Invalid JSON format in field: $key');
+          }
         } else {
-          formData.fields.add(MapEntry(key, value.toString()));
+          request.fields[key] = value.toString();
         }
       });
 
       for (String path in photoPaths) {
-        final file = File(path);
-        if (!file.existsSync()) {
-          print('File does not exist: $path');
+        final ext = path.split('.').last.toLowerCase();
+        MediaType? contentType;
+
+        if (ext == 'jpg' || ext == 'jpeg') {
+          contentType = MediaType('image', 'jpeg');
+        } else if (ext == 'png') {
+          contentType = MediaType('image', 'png');
+        } else {
+          print(" Unsupported image type: $path");
           continue;
         }
 
-        final fileName = path.split('/').last;
-        final mimeType = _getMimeType(fileName);
-
-        if (mimeType == null) {
-          print("Unsupported image type: $path");
-          continue;
-        }
-
-        formData.files.add(MapEntry(
+        final file = await http.MultipartFile.fromPath(
           'photos',
-          await MultipartFile.fromFile(path, filename: fileName, contentType: mimeType),
-        ));
+          path,
+          contentType: contentType,
+        );
+        request.files.add(file);
       }
 
-      if (formData.files.isEmpty) {
+      if (request.files.isEmpty) {
         throw Exception("At least one valid image is required.");
       }
 
-      final response = await _dio.post(
-        '$_baseUrl/api/v1/playground/createPlaygorund',
-        data: formData,
-      );
+      final response = await request.send();
+      final body = await response.stream.bytesToString();
 
       if (response.statusCode == 201) {
-        print('✅ Playground Created: ${response.data}');
-
+        final data = jsonDecode(body);
+        print(' Playground Created: $data');
+        Get.snackbar("Success", "Playground created!",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white);
       } else {
-        print('❌ Error: ${response.statusCode} - ${response.data}');
-        throw Exception('Failed to create playground');
+        print('❌ Failed [${response.statusCode}]: $body');
+        throw Exception('Error: ${response.statusCode}\n$body');
       }
     } catch (e) {
       print('❌ Exception: $e');
-
-    }
-  }
-
-
-  MediaType? _getMimeType(String fileName) {
-    final ext = fileName.split('.').last.toLowerCase();
-    switch (ext) {
-      case 'jpg':
-      case 'jpeg':
-        return MediaType('image', 'jpeg');
-      case 'png':
-        return MediaType('image', 'png');
-      default:
-        return null;
+      Get.snackbar('Error', e.toString(),
+          backgroundColor: Colors.red, colorText: Colors.white);
+      rethrow;
     }
   }
 }
