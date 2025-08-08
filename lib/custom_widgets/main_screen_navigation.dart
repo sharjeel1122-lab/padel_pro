@@ -2,6 +2,7 @@
   import 'package:get/get.dart';
   import 'package:padel_pro/controllers/main_controller.dart';
   import 'package:padel_pro/screens/profile_screen/user_profile_screen.dart';
+import 'package:padel_pro/screens/user/views/all_tournament.dart';
   import '../screens/user/views/booking_screen.dart';
   import '../screens/home_screen.dart';
   import 'bottom_nav_bar.dart';
@@ -15,6 +16,7 @@
 
       final List<Widget> screens = [
         HomeScreen(),
+        AllTournamentsScreen(),
         BookingScreen(),
          UserProfileScreen(),
       ];

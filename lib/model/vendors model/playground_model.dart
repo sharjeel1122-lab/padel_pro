@@ -80,9 +80,8 @@
 // // Add fromJson and toJson methods
 // }
 
-
 class Playground {
-  String name, size, description, openingTime, closingTime, phoneNumber, location, city, website;
+  String name, size, description, town,openingTime, closingTime, phoneNumber, location, city, website;
   List<String> facilities;
   List<Court> courts;
 
@@ -95,6 +94,7 @@ class Playground {
     required this.phoneNumber,
     required this.location,
     required this.city,
+    required this.town,
     this.website = "",
     required this.facilities,
     required this.courts,
@@ -110,10 +110,46 @@ class Playground {
     "location": location,
     "city": city,
     "website": website,
+    "town":town,
     "facilities": facilities,
     "courts": courts.map((c) => c.toJson()).toList(),
   };
 }
+
+
+// class Playground {
+//   String name, size, description, openingTime, closingTime, phoneNumber, location, city, website;
+//   List<String> facilities;
+//   List<Court> courts;
+//
+//   Playground({
+//     required this.name,
+//     required this.size,
+//     required this.description,
+//     required this.openingTime,
+//     required this.closingTime,
+//     required this.phoneNumber,
+//     required this.location,
+//     required this.city,
+//     this.website = "",
+//     required this.facilities,
+//     required this.courts,
+//   });
+//
+//   Map<String, dynamic> toJson() => {
+//     "name": name,
+//     "size": size,
+//     "description": description,
+//     "openingTime": openingTime,
+//     "closingTime": closingTime,
+//     "phoneNumber": phoneNumber,
+//     "location": location,
+//     "city": city,
+//     "website": website,
+//     "facilities": facilities,
+//     "courts": courts.map((c) => c.toJson()).toList(),
+//   };
+// }
 
 class Court {
   String courtNumber;

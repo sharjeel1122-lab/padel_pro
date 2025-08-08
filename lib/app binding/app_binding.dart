@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:padel_pro/controllers/auth%20controllers/otp_controller.dart';
 import 'package:padel_pro/controllers/auth%20controllers/vendor_signup_controller.dart';
-import 'package:padel_pro/screens/vendor/tournament/tournment_controller.dart';
+import 'package:padel_pro/screens/vendor/tournament/create_tournment_controller.dart';
 import 'package:padel_pro/services/verify_otp_api.dart';
 import '../controllers/auth controllers/auth_rolebase_controller.dart';
 import '../controllers/auth controllers/user_signup_controller.dart';

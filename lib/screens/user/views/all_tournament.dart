@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:padel_pro/screens/vendor/tournament/tournament_create_screen.dart';
-import 'package:padel_pro/screens/vendor/tournament/vendor_view_tournament_controller.dart';
+import 'package:padel_pro/screens/user/user_controller/all_tournament_controller.dart';
+
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 
-class VendorTournamentsScreen extends StatelessWidget {
-  final controller = Get.put(VendorTournamentController());
+class AllTournamentsScreen extends StatelessWidget {
+  final controller = Get.put(AllTournamentController());
   final RefreshController _refreshController = RefreshController();
-  final Color primaryColor = const Color(0xFF0C1E2C);
+  final Color primaryColor = Colors.white;
+  // final Color primaryColor = const Color(0xFF0C1E2C);
   final Color cardColor = const Color(0xFF1E3354);
   final Color accentColor = const Color(0xFF4A80F0);
 
   Future<void> _onRefresh() async {
     try {
-      await controller.fetchVendorTournaments();
+      await controller.fetchAllTournaments();
       _refreshController.refreshCompleted();
     } catch (e) {
       _refreshController.refreshFailed();
@@ -33,24 +34,25 @@ class VendorTournamentsScreen extends StatelessWidget {
       backgroundColor: primaryColor,
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('My Tournaments', style: TextStyle(color: Colors.white)),
-        backgroundColor: primaryColor,
+        title: const Text('All Tournaments', style: TextStyle(color: Colors.white)),
+        backgroundColor:  Color(0xFF1E3354),
         elevation: 0,
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: () {
-              Get.to(() => CreateTournamentScreen());
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(Icons.add, color: Colors.white),
+          //   onPressed: () {
+          //     Get.to(() => CreateTournamentScreen());
+          //   },
+          // ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.tournaments.isEmpty) {
           return const Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              color: Color(0xFF1E3354),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E3354)),
             ),
           );
         }
@@ -79,15 +81,7 @@ class VendorTournamentsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {
-                    Get.to(() => CreateTournamentScreen());
-                  },
-                  child: Text(
-                    'Create your first tournament',
-                    style: TextStyle(color: accentColor),
-                  ),
-                ),
+
               ],
             ),
           )

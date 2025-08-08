@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:padel_pro/controllers/auth%20controllers/auth_rolebase_controller.dart';
+import 'package:get/get.dart';
 
 class MPINLoginScreen extends StatefulWidget {
   const MPINLoginScreen({super.key});
@@ -9,6 +11,8 @@ class MPINLoginScreen extends StatefulWidget {
 }
 
 class _MPINLoginScreenState extends State<MPINLoginScreen> {
+  final AuthController authController = Get.put(AuthController());
+
   String enteredPIN = '';
   final int pinLength = 4;
 
@@ -18,10 +22,10 @@ class _MPINLoginScreenState extends State<MPINLoginScreen> {
         enteredPIN += number;
       });
 
-      if (enteredPIN.length == pinLength) {
-        // Verify PIN logic here
-        _verifyPIN();
-      }
+      // if (enteredPIN.length == pinLength) {
+      //   // Verify PIN logic here
+      //   _verifyPIN();
+      // }
     }
   }
 
@@ -33,28 +37,31 @@ class _MPINLoginScreenState extends State<MPINLoginScreen> {
     }
   }
 
-  Future<void> _verifyPIN() async {
-    // Replace with your actual PIN verification logic
-    await Future.delayed(Duration(milliseconds: 300));
 
-    if (enteredPIN == "1234") {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      setState(() {
-        enteredPIN = '';
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Invalid PIN. Please try again.'),
-          backgroundColor: Color(0xFF072A40),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-    }
-  }
+  // Future<void> _verifyPIN() async {
+  //   try {
+  //     await authController.loginWithMPIN(enteredPIN);
+  //   } catch (e) {
+  //     setState(() {
+  //       enteredPIN = '';
+  //     });
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Invalid MPIN. Please try again.'),
+  //         backgroundColor: Color(0xFF072A40),
+  //         behavior: SnackBarBehavior.floating,
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(10),
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +76,7 @@ class _MPINLoginScreenState extends State<MPINLoginScreen> {
               child: Column(
                 children: [
                   Image.asset(
-                    'assets/logo.png', // Replace with your logo
+                    'assets/logo.png',
                     height: 80,
                   ),
                   SizedBox(height: 20),

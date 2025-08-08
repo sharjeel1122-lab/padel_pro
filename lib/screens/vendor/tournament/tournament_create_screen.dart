@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:padel_pro/screens/vendor/tournament/tournment_controller.dart';
+import 'package:padel_pro/screens/vendor/tournament/create_tournment_controller.dart';
 
 
 
@@ -31,6 +31,7 @@ class CreateTournamentScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+
             // Cover Photo Section
             _buildTournamentCard(
               child: Column(
@@ -155,7 +156,7 @@ class CreateTournamentScreen extends StatelessWidget {
 
             // Date & Time Section
             _buildTournamentCard(
-              child: Column(
+              child: Obx(() => Column(
                 children: [
                   _buildDatePicker(
                     context: context,
@@ -171,8 +172,12 @@ class CreateTournamentScreen extends StatelessWidget {
                     onTap: () => _selectTime(context),
                   ),
                 ],
-              ),
+              )),
             ),
+
+
+
+
             const SizedBox(height: 30),
 
             // Create Button
@@ -187,16 +192,12 @@ class CreateTournamentScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'CREATE TOURNAMENT',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0C1E2C),
-                  ),
+                child: Obx(() => controller.isLoading.value
+                    ? CircularProgressIndicator(color: Colors.white)
+                    : Text('Create Tournament')),
                 ),
               ),
-            ),
+
             const SizedBox(height: 20),
           ],
         ),
@@ -390,6 +391,8 @@ class CreateTournamentScreen extends StatelessWidget {
       ],
     );
   }
+
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(

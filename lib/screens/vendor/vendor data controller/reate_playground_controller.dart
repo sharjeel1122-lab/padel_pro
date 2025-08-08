@@ -328,7 +328,6 @@
 // }
 //
 
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -377,18 +376,24 @@ class CourtUIModel {
   model.Court toModel() => model.Court(
     courtNumber: courtNumberController.text.trim(),
     courtType: [courtTypeController.text.trim()],
-    pricing: pricingList.map((p) => model.Pricing(
-      duration: p.duration,
-      price: double.tryParse(p.priceController.text) ?? 0,
-    )).toList(),
-    peakHours: peakHoursList.map((ph) => model.PeakHour(
-      startTime: ph.startTimeController.text,
-      endTime: ph.endTimeController.text,
-      price: double.tryParse(ph.priceController.text) ?? 0,
-    )).toList(),
+    pricing: pricingList
+        .map(
+          (p) => model.Pricing(
+            duration: p.duration,
+            price: double.tryParse(p.priceController.text) ?? 0,
+          ),
+        )
+        .toList(),
+    peakHours: peakHoursList
+        .map(
+          (ph) => model.PeakHour(
+            startTime: ph.startTimeController.text,
+            endTime: ph.endTimeController.text,
+            price: double.tryParse(ph.priceController.text) ?? 0,
+          ),
+        )
+        .toList(),
   );
-
-
 
   void dispose() {
     courtNumberController.dispose();
@@ -433,15 +438,23 @@ class CreatePlaygroundController extends GetxController {
       }).toList();
 
       if (selectedImages.length + allowed.length > 5) {
-        Get.snackbar("Limit", "Maximum 5 images allowed",
-            backgroundColor: Colors.orange, colorText: Colors.white);
+        Get.snackbar(
+          "Limit",
+          "Maximum 5 images allowed",
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
         return;
       }
 
       selectedImages.addAll(allowed);
-        } catch (e) {
-      Get.snackbar("Error", e.toString(),
-          backgroundColor: Colors.red, colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -473,24 +486,52 @@ class CreatePlaygroundController extends GetxController {
 
   Future<void> submitForm() async {
     try {
-      if (!formKey.currentState!.validate()) throw 'Please fill required fields';
+      if (!formKey.currentState!.validate())
+        throw 'Please fill required fields';
       if (selectedImages.isEmpty) throw 'Upload at least 1 image';
+
+      final descriptionText = descriptionC.text.trim();
+      final wordCount = descriptionText.split(RegExp(r'\s+')).length;
+      if (wordCount < 10)
+        Get.snackbar(
+          "Validation",
+          "Description must contains at least 10 words",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      ;
 
       final convertedCourts = courts.map((c) => c.toModel()).toList();
 
       final model = Playground(
-        name: nameC.text.trim(),
-        size: sizeC.text.trim(),
-        description: descriptionC.text.trim(),
-        openingTime: openingTimeC.text.trim(),
-        closingTime: closingTimeC.text.trim(),
-        phoneNumber: phoneC.text.trim(),
-        location: locationC.text.trim(),
-        city: cityC.text.trim(),
-        website: websiteC.text.trim(),
-        facilities: facilities.toList(),
+        town: townC.text.capitalizeFirst!.trim(),
+        name: nameC.text.trim().capitalizeFirst!,
+        size: sizeC.text.trim().capitalizeFirst!,
+        description: descriptionC.text.trim().capitalizeFirst!,
+        openingTime: openingTimeC.text.trim().capitalizeFirst!,
+        closingTime: closingTimeC.text.trim().capitalizeFirst!,
+        phoneNumber: phoneC.text.trim().capitalizeFirst!,
+        location: locationC.text.trim().capitalizeFirst!,
+        city: cityC.text.trim().capitalizeFirst!,
+        website: websiteC.text.trim().capitalizeFirst!,
+        facilities: facilities.map((f) => f.toLowerCase()).toList(),
         courts: convertedCourts,
       );
+
+      // final model = Playground(
+      //   name: nameC.text.trim(),
+      //   size: sizeC.text.trim(),
+      //
+      //   description: descriptionC.text.trim(),
+      //   openingTime: openingTimeC.text.trim(),
+      //   closingTime: closingTimeC.text.trim(),
+      //   phoneNumber: phoneC.text.trim(),
+      //   location: locationC.text.trim(),
+      //   city: cityC.text.trim(),
+      //   website: websiteC.text.trim(),
+      //   facilities: facilities.toList(),
+      //   courts: convertedCourts,
+      // );
 
       final paths = selectedImages.map((x) => x.path).toList();
       isSubmitting.value = true;
@@ -498,8 +539,12 @@ class CreatePlaygroundController extends GetxController {
 
       clearForm();
     } catch (e) {
-      Get.snackbar("Error", e.toString(),
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isSubmitting.value = false;
     }
@@ -546,4 +591,3 @@ class CreatePlaygroundController extends GetxController {
     super.onClose();
   }
 }
-

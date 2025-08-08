@@ -21,6 +21,7 @@ class CreatePlaygroundView extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: primaryColor,
         centerTitle: true,
         title: Text(

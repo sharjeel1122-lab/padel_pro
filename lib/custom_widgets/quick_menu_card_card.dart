@@ -92,18 +92,18 @@ class QuickMenuCard extends StatelessWidget {
                   ),
                 ),
                 // Image with subtle scale animation on tap
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  transform: Matrix4.identity(),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Image.asset(
-                      imagePath,
-                      height: isSmallScreen ? 50.0 : 70.0,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
+                // AnimatedContainer(
+                //   duration: const Duration(milliseconds: 200),
+                //   transform: Matrix4.identity(),
+                //   child: Padding(
+                //     padding: const EdgeInsets.only(left: 8.0),
+                //     child: Image.asset(
+                //       imagePath,
+                //       height: isSmallScreen ? 50.0 : 70.0,
+                //       fit: BoxFit.contain,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),

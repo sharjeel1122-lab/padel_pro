@@ -3,15 +3,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class FetchVendorApi {
-  // final _baseUrl = 'http://192.168.0.101:3000';
-  final String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+  final _baseUrl = 'http://10.248.2.67:3000';
+  // final String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
 
   final _storage = const FlutterSecureStorage();
 
-  // 🔐 Read token from secure storage
+
   Future<String?> _getToken() async => await _storage.read(key: 'token');
 
-  /// ✅ Fetch only playgrounds created by the logged-in vendor
+
   Future<List<dynamic>> getVendorPlaygrounds() async {
     try {
       final token = await _getToken();
@@ -50,8 +50,8 @@ class FetchVendorApi {
   //Delete Playground API
 
   Future<void> deletePlaygroundById(String id) async {
-    final token = await _storage.read(key: 'token'); // ✅ get token
-    final uri = Uri.parse('$_baseUrl/api/v1/playground/delete/$id'); // ✅ make sure this matches your actual endpoint
+    final token = await _storage.read(key: 'token'); //
+    final uri = Uri.parse('$_baseUrl/api/v1/playground/delete/$id');
 
     final response = await http.delete(
       uri,
@@ -67,7 +67,82 @@ class FetchVendorApi {
   }
 
 
+  //Update Playground
+  Future<Map<String, dynamic>> updatePlaygroundById(
+      String id,
+      Map<String, dynamic> payload,
+      ) async {
+    final token = await _storage.read(key: 'token');
+    if (token == null) throw Exception('Missing token');
+
+    final uri = Uri.parse('$_baseUrl/api/v1/playground/update/$id');
+    print(uri);
+    try {
+      final res = await http.patch(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      } else {
+        dynamic errorBody;
+        try { errorBody = jsonDecode(res.body); } catch (_) { errorBody = res.body; }
+        final msg = (errorBody is Map && errorBody['message'] != null)
+            ? errorBody['message']
+            : 'HTTP ${res.statusCode}: ${res.reasonPhrase ?? 'Unknown error'}';
+        throw Exception('Update failed: $msg');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
+  //Update Courts
+
+  Future<Map<String, dynamic>> updateCourtById(
+      String id,
+      Map<String, dynamic> payload,
+      ) async {
+    final token = await _storage.read(key: 'token');
+    if (token == null) throw Exception('Missing token');
+
+    final uri = Uri.parse('$_baseUrl/api/v1/playground/updateCourts/$id');
+    print(uri);
+    try {
+      final res = await http.patch(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      } else {
+        dynamic errorBody;
+        try { errorBody = jsonDecode(res.body); } catch (_) { errorBody = res.body; }
+        final msg = (errorBody is Map && errorBody['message'] != null)
+            ? errorBody['message']
+            : 'HTTP ${res.statusCode}: ${res.reasonPhrase ?? 'Unknown error'}';
+        throw Exception('Update failed: $msg');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
 
 
 
 }
+
+

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       designSize: const Size(375, 812),
       builder: (context, _) => GetMaterialApp(
         debugShowCheckedModeBanner: false,
-        initialRoute: AppRoutes.INITIAL, // Or whatever your initial route should be
+        initialRoute: AppRoutes.INITIAL,
         getPages: AppPages.routes,
         initialBinding: AppBindings(),
       ),

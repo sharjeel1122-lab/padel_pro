@@ -57,6 +57,13 @@ class BottomNavBar extends StatelessWidget {
             // ),
             BottomNavigationBarItem(
               icon: Padding(
+                padding: EdgeInsets.all(12),
+                child: Icon(Icons.account_tree_outlined,size: 24,),
+              ),
+              label: 'Tournaments',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
                 padding:  EdgeInsets.all(12),
                 child: Icon(Icons.calendar_today_outlined,size: 24),
               ),

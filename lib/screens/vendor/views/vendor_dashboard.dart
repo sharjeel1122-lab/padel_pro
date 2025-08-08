@@ -225,7 +225,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                           name: club['name'],
                           location: club['location'],
                           courts: (club['courts'] as List).length,
-                          onView: () => controller.viewCourts(index),
+                          onView: () => controller.viewCourts(index,club['courts'] as List<dynamic>),
                           onEdit: () => controller.editClub(index),
                           onDelete: () => controller.deleteClub(index),
                         );
@@ -407,7 +407,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                   _buildMenuItem(
                     icon: Icons.tour,
                     title: 'My Tournaments',
-                    onTap: () => Get.to(ViewTournamentsScreen()),
+                    onTap: () => Get.to(VendorTournamentsScreen()),
                   ),
 
                   const Padding(

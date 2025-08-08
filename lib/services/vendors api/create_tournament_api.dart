@@ -1,57 +1,89 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
-class TournamentService {
-  final String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
-  final _storage = const FlutterSecureStorage();
+class CreateTournamentApi {
+  final _baseUrl = 'http://10.248.2.67:3000';
+  final _storage = FlutterSecureStorage();
 
+  Future<String?> _getToken() async {
+    return await _storage.read(key: 'token');
+  }
 
-  Future<String?> _getToken() async => await _storage.read(key: 'token');
-
-
-  Future<Map<String, dynamic>> createTournament({
+  Future<void> createTournament({
     required String name,
+    required String registrationLink,
+    required String tournamentType,
+    required String location,
+    required String startDate,
+    required String startTime,
     required String description,
     File? photo,
   }) async {
     try {
       final token = await _getToken();
+      if (token == null) throw Exception("Unauthorized: Token not found");
 
-      if (token == null) {
-        throw Exception('❌ Missing token. Please log in again.');
-      }
+      final url = Uri.parse('$_baseUrl/api/v1/tournament/');
+      final request = http.MultipartRequest('POST', url);
+      request.headers['Authorization'] = 'Bearer $token';
 
-      final uri = Uri.parse('$_baseUrl/api/v1/tournament/');
-      print('📤 POST: $uri');
 
-      var request = http.MultipartRequest('POST', uri)
-        ..headers['Authorization'] = 'Bearer $token'
-        ..fields['name'] = name
-        ..fields['description'] = description;
+      request.fields['name'] = name;
+      request.fields['registrationLink'] = registrationLink;
+      request.fields['tournamentType'] = tournamentType;
+      request.fields['location'] = location;
+      request.fields['startDate'] = startDate;
+      request.fields['startTime'] = startTime;
+      request.fields['description'] = description;
+
 
       if (photo != null) {
-        request.files.add(await http.MultipartFile.fromPath('photo', photo.path));
-        print('📷 Attached image: ${photo.path}');
+        final ext = photo.path.split('.').last.toLowerCase();
+        MediaType? contentType;
+
+        if (ext == 'jpg' || ext == 'jpeg') {
+          contentType = MediaType('image', 'jpeg');
+        } else if (ext == 'png') {
+          contentType = MediaType('image', 'png');
+        }
+
+        if (contentType != null) {
+          final image = await http.MultipartFile.fromPath(
+            'photo',
+            photo.path,
+            contentType: contentType,
+          );
+          request.files.add(image);
+        } else {
+          throw Exception('Unsupported image format: .$ext');
+        }
       }
 
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      final data = jsonDecode(response.body);
 
-      print('✅ Create Tournament Response: ${response.statusCode} -> $data');
+      final response = await request.send();
+      final body = await response.stream.bytesToString();
 
-      return {
-        'statusCode': response.statusCode,
-        'body': data,
-      };
+      if (response.statusCode == 201) {
+        final data = jsonDecode(body);
+        print('Tournament Created: $data');
+        Get.snackbar("Success", "Tournament created!",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white);
+      } else {
+        print('❌ Failed [${response.statusCode}]: $body');
+        throw Exception('Error: ${response.statusCode}\n$body');
+      }
     } catch (e) {
-      print('🚨 createTournament Error: $e');
-      return {
-        'statusCode': 500,
-        'body': {'success': false, 'error': e.toString()},
-      };
+      print('❌ Exception: $e');
+      Get.snackbar('Error', e.toString(),
+          backgroundColor: Colors.red, colorText: Colors.white);
+      rethrow;
     }
   }
 }

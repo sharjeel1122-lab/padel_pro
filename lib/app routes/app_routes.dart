@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 abstract class AppRoutes {
+
   static const INITIAL = '/splash';
   static const LOGIN = '/login';
   static const USER_HOME = '/userHome';

@@ -6,6 +6,152 @@ import 'package:padel_pro/services/user_login_api.dart';
 
 import '../../services/profile api/user_profile_api.dart';
 
+
+
+//
+//
+// class AuthController extends GetxController {
+//   final saveVendorId = GetStorage();
+//   final profileApi = ProfileApi();
+//   final storage = const FlutterSecureStorage();
+//
+//   final obscureText = true.obs;
+//   final rememberMe = false.obs;
+//   final isLoading = false.obs;
+//
+//   void toggleVisibility() => obscureText.toggle();
+//   void toggleRememberMe() => rememberMe.toggle();
+//
+//   // Email/Password Login
+//   Future<void> login(String email, String password) async {
+//     try {
+//       isLoading(true);
+//       Get.closeAllSnackbars();
+//
+//       final response = await UserLoginApi.login(email, password);
+//       final token = response['token'];
+//       final user = response['user'];
+//       final role = user['role'];
+//       final id = user['id'];
+//
+//       await storage.write(key: 'token', value: token);
+//       await storage.write(key: 'role', value: role);
+//       await storage.write(key: 'email', value: email);
+//
+//       if (role.toLowerCase() == 'vendor') {
+//         await storage.write(key: 'vendorId', value: id);
+//       }
+//
+//       profileApi.getProfile();
+//
+//       Get.snackbar('Login Successful', 'Welcome ${role.toUpperCase()}',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.green,
+//           colorText: Colors.white);
+//
+//       await Future.delayed(const Duration(seconds: 1));
+//
+//       final hasMPIN = await storage.read(key: 'mpin');
+//       if (hasMPIN == null) {
+//         Get.offAllNamed('/setup-mpin'); // <-- route to create MPIN
+//       } else {
+//         _navigateToDashboard(role);
+//       }
+//     } catch (e) {
+//       Get.snackbar('Login Failed', e.toString().replaceAll('Exception: ', ''),
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red,
+//           colorText: Colors.white);
+//     } finally {
+//       isLoading(false);
+//     }
+//   }
+//
+//   // MPIN Login
+//   Future<void> loginWithMPIN(String mpin) async {
+//     try {
+//       isLoading(true);
+//       final response = await UserMPINLoginApi.loginWithMPIN(mpin);
+//
+//       final token = response['token'];
+//       final user = response['user'];
+//       final role = user['role'] ?? 'user';
+//       final id = user['id'];
+//
+//       await storage.write(key: 'token', value: token);
+//       await storage.write(key: 'role', value: role);
+//       await storage.write(key: 'email', value: user['email']);
+//       await storage.write(key: 'mpin', value: mpin);
+//
+//       if (role.toLowerCase() == 'vendor') {
+//         await storage.write(key: 'vendorId', value: id);
+//       }
+//
+//       profileApi.getProfile();
+//
+//       Get.snackbar('Login Successful', 'Welcome back $role',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.green,
+//           colorText: Colors.white);
+//
+//       await Future.delayed(Duration(seconds: 1));
+//       _navigateToDashboard(role);
+//     } catch (e) {
+//       Get.snackbar('MPIN Login Failed', e.toString().replaceAll('Exception: ', ''),
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red,
+//           colorText: Colors.white);
+//     } finally {
+//       isLoading(false);
+//     }
+//   }
+//
+//   // Save MPIN
+//   Future<void> saveMPIN(String mpin) async {
+//     await storage.write(key: 'mpin', value: mpin);
+//   }
+//
+//   // Check if MPIN exists
+//   Future<bool> hasMPIN() async {
+//     final mpin = await storage.read(key: 'mpin');
+//     return mpin != null;
+//   }
+//
+//   // Logout
+//   Future<void> logout() async {
+//     try {
+//       await storage.deleteAll();
+//       saveVendorId.remove('vendorId');
+//
+//       Get.snackbar('Logged Out', 'You have been successfully logged out',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.blue,
+//           colorText: Colors.white);
+//
+//       Get.offAllNamed('/login');
+//     } catch (e) {
+//       Get.snackbar('Logout Error', 'Failed to clear session data',
+//           snackPosition: SnackPosition.BOTTOM,
+//           backgroundColor: Colors.red);
+//     }
+//   }
+//
+//   //  Dashboard Navigator
+//   void _navigateToDashboard(String role) {
+//     switch (role.toLowerCase()) {
+//       case 'admin':
+//         Get.offAllNamed('/admin-dashboard');
+//         break;
+//       case 'vendor':
+//         Get.offAllNamed('/vendor-dashboard');
+//         break;
+//       default:
+//         Get.offAllNamed('/userHome');
+//     }
+//   }
+// }
+
+// Working
 class AuthController extends GetxController {
   final saveVendorId = GetStorage();
   final profileApi = ProfileApi();
@@ -109,7 +255,7 @@ class AuthController extends GetxController {
     }
   }
 }
-
+// Working
 
 
 
