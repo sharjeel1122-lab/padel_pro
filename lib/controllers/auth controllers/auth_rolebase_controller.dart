@@ -7,7 +7,6 @@ import 'package:padel_pro/services/user_login_api.dart';
 import '../../services/profile api/user_profile_api.dart';
 
 
-
 //
 //
 // class AuthController extends GetxController {
