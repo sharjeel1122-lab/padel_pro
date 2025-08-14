@@ -157,6 +157,9 @@ class CreatePlaygroundView extends StatelessWidget {
     validator: isRequired ? (val) => val == null || val.isEmpty ? 'This field is required' : null : null,
   );
 
+  String _toHHmm(TimeOfDay t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
   Widget _buildTimeField({
     required BuildContext context,
     required TextEditingController controller,
@@ -167,15 +170,54 @@ class CreatePlaygroundView extends StatelessWidget {
     decoration: InputDecoration(
       labelText: label,
       prefixIcon: const Icon(Icons.access_time, size: 20),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400)),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
     ),
     onTap: () async {
-      final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-      if (time != null) controller.text = time.format(context);
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        // Optional: show the picker itself in 24h mode
+        builder: (ctx, child) => MediaQuery(
+          data: MediaQuery.of(ctx!).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        ),
+      );
+      if (time != null) controller.text = _toHHmm(time); // <-- key change
     },
-    validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+    validator: (val) {
+      if (val == null || val.isEmpty) return 'Required';
+      final ok = RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$').hasMatch(val);
+      return ok ? null : 'Use 24-hour HH:MM';
+    },
   );
+
+
+
+
+
+  // Widget _buildTimeField({
+  //   required BuildContext context,
+  //   required TextEditingController controller,
+  //   required String label,
+  // }) => TextFormField(
+  //   controller: controller,
+  //   readOnly: true,
+  //   decoration: InputDecoration(
+  //     labelText: label,
+  //     prefixIcon: const Icon(Icons.access_time, size: 20),
+  //     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade400)),
+  //     contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+  //   ),
+  //   onTap: () async {
+  //     final time = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+  //     if (time != null) controller.text = time.format(context);
+  //   },
+  //   validator: (val) => val == null || val.isEmpty ? 'Required' : null,
+  // );
 
   Widget _buildImagePicker(CreatePlaygroundController controller) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,

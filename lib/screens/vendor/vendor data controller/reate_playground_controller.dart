@@ -441,7 +441,7 @@ class CreatePlaygroundController extends GetxController {
         Get.snackbar(
           "Limit",
           "Maximum 5 images allowed",
-          backgroundColor: Colors.orange,
+          backgroundColor: Color(0xFF162A3A),
           colorText: Colors.white,
         );
         return;

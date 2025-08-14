@@ -1,44 +1,84 @@
-import 'dart:ui';
-
+import 'dart:async';
 import 'package:get/get.dart';
-import '../../../model/vendor_model.dart';
+import 'package:padel_pro/model/vendors model/vendors_model.dart';
+import 'package:padel_pro/services/admin api/fetch_all_vendors.dart';
 
 class TotalVendorsController extends GetxController {
-  final vendors = <VendorModel>[].obs;
+  final FetchAllVendorsApi service = FetchAllVendorsApi();
+
+  final vendors = <VendorsModel>[].obs;
   final searchQuery = ''.obs;
+  final isLoading = true.obs;
 
-  List<VendorModel> get filteredVendors {
-    if (searchQuery.isEmpty) return vendors;
-    final query = searchQuery.value.toLowerCase();
+  List<VendorsModel> get filteredVendors {
+    final q = searchQuery.value.trim().toLowerCase();
+    if (q.isEmpty) return vendors;
     return vendors.where((v) {
-      return v.name.toLowerCase().contains(query) ||
-          v.email.toLowerCase().contains(query) ||
-          v.phone.toLowerCase().contains(query);
+      final fullName = "${v.firstName} ${v.lastName}".toLowerCase();
+      return fullName.contains(q) ||
+          v.email.toLowerCase().contains(q) ||
+          (v.phone?.toLowerCase().contains(q) ?? false) ||
+          (v.city?.toLowerCase().contains(q) ?? false) ||
+          (v.ntn?.toLowerCase().contains(q) ?? false);
     }).toList();
-  }
-
-  void search(String query) {
-    searchQuery.value = query;
-  }
-
-  void deleteVendor(int index) {
-    vendors.removeAt(index);
-  }
-
-  void editVendor(int index) {
-    // For now: just show snackbar
-    Get.snackbar("Edit", "Edit vendor: ${vendors[index].name}",
-        backgroundColor: const Color(0xFF0A3B5C),
-        colorText: const Color(0xFFFFFFFF));
   }
 
   @override
   void onInit() {
-    vendors.addAll([
-      VendorModel(name: "Asad Ali", email: "asad@gmail.com", phone: "03001234567", location: "Lahore"),
-      VendorModel(name: "Ahmed Khan", email: "ahmed@gmail.com", phone: "03121234567", location: "Karachi"),
-      VendorModel(name: "Sara Iqbal", email: "sara@gmail.com", phone: "03211234567", location: "Islamabad"),
-    ]);
     super.onInit();
+    _loadWithMinimumDelay();
   }
+
+  void search(String query) => searchQuery.value = query;
+
+  // Initial load with a minimum of 10s splash
+  Future<void> _loadWithMinimumDelay() async {
+    isLoading.value = true;
+    final start = DateTime.now();
+
+    await fetchAllVendors(silent: true);
+
+    final elapsed = DateTime.now().difference(start);
+    const minWait = Duration(seconds: 10);
+    final remaining = minWait - elapsed;
+    if (remaining > Duration.zero) {
+      await Future.delayed(remaining);
+    }
+    isLoading.value = false;
+  }
+
+  /// Fetch vendors. If [silent] is true, avoid noisy snackbars (for initial splash).
+  Future<void> fetchAllVendors({bool silent = false}) async {
+    try {
+      final result = await service.fetchVendors(); // returns List<VendorsModel>
+      vendors.assignAll(result);
+    } catch (e) {
+      if (!silent) {
+        Get.snackbar("Error", e.toString());
+      }
+    }
+  }
+
+// // If your UI uses delete:
+// Future<void> deleteVendor(int index) async {
+//   final item = filteredVendors[index];
+//   final i = vendors.indexWhere((v) => v.id == item.id);
+//   if (i == -1) return;
+//
+//   final backup = vendors[i];
+//   vendors.removeAt(i); // optimistic
+//
+//   try {
+//     final ok = await service.deleteVendor(item.id);
+//     if (!ok) {
+//       vendors.insert(i, backup);
+//       Get.snackbar("Delete failed", "Could not delete vendor");
+//     } else {
+//       Get.snackbar("Deleted", "Vendor removed successfully");
+//     }
+//   } catch (e) {
+//     vendors.insert(i, backup);
+//     Get.snackbar("Error", e.toString());
+//   }
+// }
 }

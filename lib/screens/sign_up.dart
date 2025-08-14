@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:padel_pro/app_color.dart';
 import 'package:padel_pro/controllers/auth%20controllers/user_signup_controller.dart';
 import '../../../custom textfield/vendor_signup_fields.dart';
@@ -12,23 +13,63 @@ class SignUpScreen extends StatelessWidget {
   SignUpScreen({super.key});
 
   final _formKey = GlobalKey<FormState>();
-  final UserSignUpController userSignUpController = Get.find<UserSignUpController>();
-  final RxString _imagePath = RxString(''); // Initialize with empty string
+
+  /// Create or retrieve the controller instance
+  final UserSignUpController userSignUpController = Get.put(UserSignUpController());
+
+  // Reactive state
+  final RxString _imagePath = ''.obs;
+  final RxString _photoError = ''.obs;
 
   // Controllers
-  final _fullNameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _mpinController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController  = TextEditingController();
+  final _emailController     = TextEditingController();
+  final _phoneController     = TextEditingController();
+  final _cityController      = TextEditingController();
+  final _townController      = TextEditingController(); // REQUIRED now
+  final _passwordController  = TextEditingController();
+  final _mpinController      = TextEditingController();
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (pickedFile != null) {
       _imagePath.value = pickedFile.path;
+      _photoError.value = '';
     }
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    // Enforce profile photo BEFORE API call (backend requires req.file)
+    if (_imagePath.value.isEmpty) {
+      _photoError.value = 'Profile photo is required';
+      Get.snackbar(
+        'Missing photo',
+        'Please add a profile picture to continue.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    userSignUpController.signupUser(
+      firstName: _firstNameController.text.trim(),
+      lastName:  _lastNameController.text.trim(),
+      email:     _emailController.text.trim(),
+      phone:     _phoneController.text.trim(),
+      city:      _cityController.text.trim(),
+      town:      _townController.text.trim(), // REQUIRED
+      password:  _passwordController.text.trim(),
+      mpin:      _mpinController.text.trim(),
+      photoPath: _imagePath.value, // guaranteed non-empty by UI
+      // role: 'user', // default
+    );
   }
 
   @override
@@ -48,7 +89,6 @@ class SignUpScreen extends StatelessWidget {
                   icon: const Icon(Icons.arrow_back, color: AppColors.primary),
                   onPressed: () => Get.back(),
                 ),
-
                 const SizedBox(height: 10),
 
                 // Title
@@ -62,9 +102,7 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 5),
-
                 Center(
                   child: Text(
                     'Fill in your details to get started',
@@ -74,45 +112,75 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
 
-                // Profile Picture
+                // Profile Picture + inline error
                 Center(
-                  child: Obx(() => GestureDetector(
-                    onTap: _pickImage,
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: AppColors.lightGrey,
-                      backgroundImage: _imagePath.value.isNotEmpty
-                          ? FileImage(File(_imagePath.value))
-                          : null,
-                      child: _imagePath.value.isEmpty
-                          ? const Icon(
-                        Icons.camera_alt,
-                        size: 30,
-                        color: AppColors.primary,
-                      )
-                          : null,
+                  child: Obx(
+                        () => Column(
+                      children: [
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor: AppColors.lightGrey,
+                            backgroundImage: _imagePath.value.isNotEmpty
+                                ? FileImage(File(_imagePath.value))
+                                : null,
+                            child: _imagePath.value.isEmpty
+                                ? const Icon(
+                              Icons.camera_alt,
+                              size: 30,
+                              color: AppColors.primary,
+                            )
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        if (_photoError.value.isNotEmpty)
+                          Text(
+                            _photoError.value,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.red,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
                     ),
-                  )),
+                  ),
                 ),
-
                 const SizedBox(height: 30),
 
-                // Full Name
-                CustomTextField(
-                  controller: _fullNameController,
-                  label: 'Full Name',
-                  icon: Icons.person_outline,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter full name';
-                    } else if (value.trim().length < 3) {
-                      return 'Full name must be at least 3 characters';
-                    }
-                    return null;
-                  },
+                // First & Last name (two columns)
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomTextField(
+                        controller: _firstNameController,
+                        label: 'First Name',
+                        icon: Icons.person_outline,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Please enter first name';
+                          if (v.trim().length < 2) return 'Minimum 2 characters';
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: CustomTextField(
+                        controller: _lastNameController,
+                        label: 'Last Name',
+                        icon: Icons.person_outline,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return 'Please enter last name';
+                          if (v.trim().length < 2) return 'Minimum 2 characters';
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
                 ),
 
                 // Email
@@ -122,11 +190,8 @@ class SignUpScreen extends StatelessWidget {
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter email';
-                    } else if (!GetUtils.isEmail(value.trim())) {
-                      return 'Enter a valid email';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter email';
+                    if (!GetUtils.isEmail(value.trim())) return 'Enter a valid email';
                     return null;
                   },
                 ),
@@ -138,26 +203,31 @@ class SignUpScreen extends StatelessWidget {
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter phone number';
-                    } else if (!GetUtils.isPhoneNumber(value)) {
-                      return 'Enter a valid number';
-                    } else if (value.length < 11 || value.length > 13) {
-                      return 'Number should be 11-13 digits';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter phone number';
+                    if (!GetUtils.isPhoneNumber(value)) return 'Enter a valid number';
+                    if (value.length < 11 || value.length > 13) return 'Number should be 11-13 digits';
                     return null;
                   },
                 ),
 
-                // City
+                // City (required)
                 CustomTextField(
                   controller: _cityController,
-                  label: 'Location',
+                  label: 'City',
                   icon: Icons.location_city_outlined,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter location';
-                    }
+                    if (value == null || value.trim().isEmpty) return 'Please enter city';
+                    return null;
+                  },
+                ),
+
+                // Town (REQUIRED now)
+                CustomTextField(
+                  controller: _townController,
+                  label: 'Town / Area',
+                  icon: Icons.location_on_outlined,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) return 'Please enter town/area';
                     return null;
                   },
                 ),
@@ -171,38 +241,38 @@ class SignUpScreen extends StatelessWidget {
                   maxLength: 4,
                   obscureText: true,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your M-PIN';
-                    } else if (value.trim().length != 4 ||
-                        !RegExp(r'^\d+$').hasMatch(value)) {
+                    if (value == null || value.trim().isEmpty) return 'Please enter your M-PIN';
+                    if (value.trim().length != 4 || !RegExp(r'^\d+$').hasMatch(value)) {
                       return 'M-PIN must be 4 digits';
                     }
                     return null;
                   },
                 ),
 
-                // Password
-                Obx(() => CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  icon: Icons.lock_outline,
-                  obscureText: userSignUpController.obscureText.value, // Add .value here
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      userSignUpController.obscureText.value
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      color: AppColors.primary,
+                // Password (with visibility toggle)
+                Obx(
+                      () => CustomTextField(
+                    controller: _passwordController,
+                    label: 'Password',
+                    icon: Icons.lock_outline,
+                    obscureText: userSignUpController.obscureText.value,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        userSignUpController.obscureText.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: AppColors.primary,
+                      ),
+                      onPressed: userSignUpController.togglePasswordVisibility,
                     ),
-                    onPressed: userSignUpController.togglePasswordVisibility,
+                    validator: (value) {
+                      if (value == null || value.length < 6) {
+                        return 'Enter at least 6 characters';
+                      }
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    if (value == null || value.length < 6) {
-                      return 'Enter at least 6 characters';
-                    }
-                    return null;
-                  },
-                )),
+                ),
 
                 const SizedBox(height: 30),
 
@@ -211,7 +281,7 @@ class SignUpScreen extends StatelessWidget {
                   children: [
                     Checkbox(
                       value: true,
-                      onChanged: (value) {},
+                      onChanged: (_) {},
                       activeColor: AppColors.primary,
                     ),
                     Expanded(
@@ -238,46 +308,31 @@ class SignUpScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Sign Up Button
-                Obx(() => SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF072A40),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                Obx(
+                      () => SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF072A40),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    onPressed: userSignUpController.isLoading.value
-                        ? null
-                        : () {
-                      if (_formKey.currentState!.validate()) {
-                        userSignUpController.signupUser(
-                          firstName: _fullNameController.text.trim().split(" ").first,
-                          lastName: _fullNameController.text.trim().split(" ").skip(1).join(" "),
-                          email: _emailController.text.trim(),
-                          phone: _phoneController.text.trim(),
-                          city: _cityController.text.trim(),
-                          password: _passwordController.text.trim(),
-                          mpin: _mpinController.text.trim(),
-                          photoPath: _imagePath.value,
-                        );
-                      }
-                    },
-                    child: userSignUpController.isLoading.value
-                        ? const CircularProgressIndicator(
-                      color: Colors.white,
-                    )
-                        : Text(
-                      'REGISTER',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                      onPressed: userSignUpController.isLoading.value ? null : _submit,
+                      child: userSignUpController.isLoading.value
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                        'REGISTER',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                )),
+                ),
 
                 const SizedBox(height: 20),
 
@@ -298,7 +353,7 @@ class SignUpScreen extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // Google Sign Up
+                // Google Sign Up (placeholder)
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(

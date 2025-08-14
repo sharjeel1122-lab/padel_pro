@@ -1,5 +1,4 @@
 // ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -9,25 +8,20 @@ import 'package:padel_pro/screens/user/views/user_allclub_details_screen.dart';
 class UserClubScreen extends StatelessWidget {
   final controller = Get.put(UserClubScreenController());
 
-   UserClubScreen({super.key});
+  UserClubScreen({super.key});
+
+  static const Color kPrimary = Color(0xFF072A40);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-
         centerTitle: true,
         title: const Text('Explore Clubs', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF072A40),
+        backgroundColor: kPrimary,
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_alt_outlined),
-            onPressed: () => _showFilterBottomSheet(context),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -35,25 +29,31 @@ class UserClubScreen extends StatelessWidget {
           children: [
             // Search Bar
             _buildSearchBar(),
+
+            const SizedBox(height: 12),
+
+            // Location chips: All / DHA / Model Town / Bahria Town
+            _LocationFilterBar(controller: controller),
+
             const SizedBox(height: 16),
-            // Categories
-            _buildCategories(),
-            const SizedBox(height: 16),
-            // Playgrounds List
+
+            // Playgrounds List (ALWAYS use filteredPlaygrounds)
             Expanded(
               child: Obx(() {
                 if (controller.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (controller.playgrounds.isEmpty) {
+                final list = controller.filteredPlaygrounds;
+
+                if (list.isEmpty) {
                   return const Center(child: Text('No playgrounds found'));
                 }
 
                 return ListView.builder(
-                  itemCount: controller.playgrounds.length,
+                  itemCount: list.length,
                   itemBuilder: (context, index) {
-                    final playground = controller.playgrounds[index];
+                    final playground = list[index];
                     return _buildPlaygroundCard(playground, context);
                   },
                 );
@@ -66,74 +66,48 @@ class UserClubScreen extends StatelessWidget {
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller.searchController,
-        onChanged: (value) => controller.searchPlaygrounds(value),
-        decoration: InputDecoration(
-          hintText: 'Search Clubs...',
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
-          border: InputBorder.none,
-          suffixIcon: controller.searchController.text.isNotEmpty
-              ? IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: () {
-              controller.searchController.clear();
-              controller.searchPlaygrounds('');
-            },
-          )
-              : null,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategories() {
-    final categories = ['All', 'DHA', 'Model Town' ,'Bahria Town'];
-
-    return SizedBox(
-      height: 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final isSelected = controller.selectedCategory.value == index;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(categories[index]),
-              selected: isSelected,
-              onSelected: (selected) {
-                controller.selectedCategory.value = index;
-                controller.filterByCategory(categories[index]);
-              },
-              selectedColor: const Color(0xFF0C1E2C),
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black87,
-              ),
-              backgroundColor: Colors.white,
+    return Obx(() {
+      final hasText = controller.searchQuery.value.isNotEmpty; // reactive read
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 10,
+              spreadRadius: 2,
             ),
-          );
-        },
-      ),
-    );
+          ],
+        ),
+        child: TextField(
+          controller: controller.searchController,
+          onChanged: controller.searchPlaygrounds, // updates Rx searchQuery
+          decoration: InputDecoration(
+            hintText: 'Search Clubs...',
+            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+            border: InputBorder.none,
+            suffixIcon: hasText
+                ? IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                controller.searchController.clear();
+                controller.searchPlaygrounds('');
+              },
+            )
+                : null,
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildPlaygroundCard(Map<String, dynamic> playground, BuildContext context) {
     final distance = playground['distance'] ?? '2.5 km';
     final rating = playground['rating'] ?? 4.5;
     final courts = playground['courts'] ?? [];
+
+    final imageUrl = controller.imageUrlFor(playground); // <-- NEW
 
     return GestureDetector(
       onTap: () => Get.to(() => UserClubDetailScreen(playground: playground)),
@@ -158,27 +132,28 @@ class UserClubScreen extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Image.network(
-                    playground['image'] ?? 'https://www.shutterstock.com/image-illustration/indoor-padel-paddle-tennis-court-260nw-2486054935.jpg',
+                  child: imageUrl != null
+                      ? Image.network(
+                    imageUrl,
+                    headers: controller.imageHeaders, // <-- if you need auth headers
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 180,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image, size: 50, color: Colors.grey),
-                    ),
-                  ),
+                    errorBuilder: (context, error, stackTrace) => _imageFallback(),
+                  )
+                      : _imageFallback(),
                 ),
                 Positioned(
                   top: 10,
                   right: 10,
                   child: IconButton(
                     icon: Icon(
-                      playground['isFavorite'] ?? false ? Icons.favorite : Icons.favorite_border,
-                      color: playground['isFavorite'] ?? false ? Colors.red : Colors.white,
+                      (playground['isFavorite'] ?? false) ? Icons.favorite : Icons.favorite_border,
+                      color: (playground['isFavorite'] ?? false) ? Colors.red : Colors.white,
                     ),
-                    onPressed: () => controller.toggleFavorite(playground['id']),
+                    onPressed: () => controller.toggleFavorite(
+                      (playground['_id']?.toString() ?? playground['id']?.toString()) ?? '',
+                    ),
                   ),
                 ),
               ],
@@ -253,21 +228,13 @@ class UserClubScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       Text(
                         'From Rs. ${controller.getPlaygroundPrice(playground)}/hour',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF0C1E2C),
+                          color: kPrimary,
                         ),
                       ),
-                      // Text(
-                      //   'From Rs. ${playground['minPrice'] ?? '15'}/hour',
-                      //   style: const TextStyle(
-                      //     fontWeight: FontWeight.bold,
-                      //     color: Color(0xFF0C1E2C),
-                      //   ),
-                      // ),
                     ],
                   ),
                 ],
@@ -279,130 +246,70 @@ class UserClubScreen extends StatelessWidget {
     );
   }
 
-  void _showFilterBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          height: MediaQuery.of(context).size.height * 0.7,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _imageFallback() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: Colors.grey[200],
+      alignment: Alignment.center,
+      child: const Icon(Icons.image, size: 50, color: Colors.grey),
+    );
+  }
+}
+
+class _LocationFilterBar extends StatelessWidget {
+  const _LocationFilterBar({required this.controller});
+  final UserClubScreenController controller;
+
+  static const Color kPrimary = Color(0xFF072A40);
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final current = controller.locationFilter.value;
+      final items = controller.knownLocations;
+
+      ChoiceChip _chip(String label) {
+        final selected = current == label;
+        return ChoiceChip(
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Filter Playgrounds',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Icon(
+                LucideIcons.mapPin,
+                size: 16,
+                color: selected ? Colors.white : kPrimary,
               ),
-              const SizedBox(height: 20),
-              // Price Range
-              const Text('Price Range (\$/hour)', style: TextStyle(fontWeight: FontWeight.bold)),
-              RangeSlider(
-                values: controller.priceRange.value,
-                min: 5,
-                max: 50,
-                divisions: 9,
-                labels: RangeLabels(
-                  '\$${controller.priceRange.value.start.round()}',
-                  '\$${controller.priceRange.value.end.round()}',
-                ),
-                onChanged: (RangeValues values) {
-                  controller.priceRange.value = values;
-                },
-              ),
-              const SizedBox(height: 20),
-              // Court Type
-              const Text('Court Type', style: TextStyle(fontWeight: FontWeight.bold)),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ['All', 'Indoor', 'Outdoor', 'Panoramic', 'Crystal', 'Wall'].map((type) {
-                  final isSelected = controller.selectedTypes.contains(type);
-                  return FilterChip(
-                    label: Text(type),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        controller.selectedTypes.add(type);
-                      } else {
-                        controller.selectedTypes.remove(type);
-                      }
-                      controller.selectedTypes.refresh();
-                    },
-                    selectedColor: const Color(0xFF0C1E2C).withOpacity(0.2),
-                    backgroundColor: Colors.grey[200],
-                    labelStyle: TextStyle(
-                      color: isSelected ? const Color(0xFF0C1E2C) : Colors.black87,
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
-              // Facilities
-              const Text('Facilities', style: TextStyle(fontWeight: FontWeight.bold)),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ['wifi', 'lockers', 'showers', 'cafe', 'parking'].map((facility) {
-                  final isSelected = controller.selectedFacilities.contains(facility);
-                  return FilterChip(
-                    label: Text(facility),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        controller.selectedFacilities.add(facility);
-                      } else {
-                        controller.selectedFacilities.remove(facility);
-                      }
-                      controller.selectedFacilities.refresh();
-                    },
-                    selectedColor: const Color(0xFF0C1E2C).withOpacity(0.2),
-                    backgroundColor: Colors.grey[200],
-                    labelStyle: TextStyle(
-                      color: isSelected ? const Color(0xFF0C1E2C) : Colors.black87,
-                    ),
-                  );
-                }).toList(),
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        controller.resetFilters();
-                        Navigator.pop(context);
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Color(0xFF0C1E2C)),
-                      ),
-                      child: const Text('Reset', style: TextStyle(color: Color(0xFF0C1E2C))),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        controller.applyFilters();
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0C1E2C),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text('Apply Filters', style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(width: 6),
+              Text(label),
             ],
           ),
+          selected: selected,
+          onSelected: (_) => controller.setLocationFilter(label),
+          selectedColor: kPrimary,
+          labelStyle: TextStyle(
+            color: selected ? Colors.white : kPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: selected ? kPrimary : Colors.black12),
+            borderRadius: BorderRadius.circular(10),
+          ),
         );
-      },
-    );
+      }
+
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final l in items) ...[
+              _chip(l),
+              const SizedBox(width: 8),
+            ],
+          ],
+        ),
+      );
+    });
   }
 }

@@ -13,7 +13,7 @@ class AdminRequestApi {
     return await _storage.read(key: 'token');
   }
 
-  // 🔄 Fetch pending vendors
+
   static Future<List<RequestModel>> fetchPendingVendors() async {
     final token = await _getToken();
     final uri = Uri.parse('$baseUrl/api/v1/admin-booking-management/pending-vendors');

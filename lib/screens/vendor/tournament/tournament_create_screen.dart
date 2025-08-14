@@ -5,8 +5,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:padel_pro/screens/vendor/tournament/create_tournment_controller.dart';
 
-
-
 class CreateTournamentScreen extends StatelessWidget {
   final controller = Get.put(CreateTournamentController());
   final Color primaryColor = const Color(0xFF0C1E2C);
@@ -66,13 +64,15 @@ class CreateTournamentScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.add_photo_alternate,
-                                    color: Colors.white.withOpacity(0.7),
+                                    color:
+                                    Colors.white.withOpacity(0.7),
                                     size: 50),
                                 const SizedBox(height: 10),
                                 Text(
                                   'Add Tournament Cover',
                                   style: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
+                                      color: Colors.white
+                                          .withOpacity(0.7),
                                       fontSize: 16),
                                 ),
                               ],
@@ -118,7 +118,8 @@ class CreateTournamentScreen extends StatelessWidget {
                   _buildTextField(
                     label: 'Tournament Name*',
                     hint: 'Enter tournament name',
-                    onChanged: (value) => controller.tournamentName.value = value,
+                    onChanged: (value) =>
+                    controller.tournamentName.value = value,
                   ),
                   const SizedBox(height: 20),
                   _buildTournamentTypeDropdown(),
@@ -141,7 +142,8 @@ class CreateTournamentScreen extends StatelessWidget {
                   _buildTextField(
                     label: 'Registration Form Link',
                     hint: 'Enter Google Form or other link',
-                    onChanged: (value) => controller.registrationLink.value = value,
+                    onChanged: (value) =>
+                    controller.registrationLink.value = value,
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
@@ -175,9 +177,6 @@ class CreateTournamentScreen extends StatelessWidget {
               )),
             ),
 
-
-
-
             const SizedBox(height: 30),
 
             // Create Button
@@ -186,17 +185,18 @@ class CreateTournamentScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: controller.createTournament,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: const Color(0xFF1E3354),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: Obx(() => controller.isLoading.value
-                    ? CircularProgressIndicator(color: Colors.white)
-                    : Text('Create Tournament')),
-                ),
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Create Tournament',
+                    style: TextStyle(color: Colors.white))),
               ),
+            ),
 
             const SizedBox(height: 20),
           ],
@@ -298,6 +298,7 @@ class CreateTournamentScreen extends StatelessWidget {
     );
   }
 
+  // ----------------------- UPDATED: helper text + “future-only” hint -----------------------
   Widget _buildDatePicker({
     required BuildContext context,
     required String label,
@@ -324,13 +325,12 @@ class CreateTournamentScreen extends StatelessWidget {
             child: Row(
               children: [
                 Icon(Icons.calendar_today,
-                    color: Colors.white.withOpacity(0.7),
-                    size: 20),
+                    color: Colors.white.withOpacity(0.7), size: 20),
                 const SizedBox(width: 12),
                 Text(
                   date != null
                       ? DateFormat('MMMM dd, yyyy').format(date)
-                      : 'Select date',
+                      : 'Select future date',
                   style: TextStyle(
                     color: date != null
                         ? Colors.white
@@ -339,6 +339,15 @@ class CreateTournamentScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        // Small helper text
+        Text(
+          'Please select a future date (after today).',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.55),
+            fontSize: 12,
           ),
         ),
       ],
@@ -371,13 +380,10 @@ class CreateTournamentScreen extends StatelessWidget {
             child: Row(
               children: [
                 Icon(Icons.access_time,
-                    color: Colors.white.withOpacity(0.7),
-                    size: 20),
+                    color: Colors.white.withOpacity(0.7), size: 20),
                 const SizedBox(width: 12),
                 Text(
-                  time != null
-                      ? time.format(context)
-                      : 'Select time',
+                  time != null ? time.format(context) : 'Select time',
                   style: TextStyle(
                     color: time != null
                         ? Colors.white
@@ -392,13 +398,20 @@ class CreateTournamentScreen extends StatelessWidget {
     );
   }
 
-
-
+  // ----------------------- UPDATED: today disabled (firstDate = tomorrow) -----------------------
   Future<void> _selectDate(BuildContext context) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+
+    // Keep previously selected date if it's valid; otherwise start from tomorrow.
+    final initial = controller.startDate.value ?? tomorrow;
+    final safeInitial = initial.isBefore(tomorrow) ? tomorrow : initial;
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: safeInitial,
+      firstDate: tomorrow,                // <-- disallow today
       lastDate: DateTime(2101),
       builder: (context, child) {
         return Theme(
@@ -448,4 +461,3 @@ class CreateTournamentScreen extends StatelessWidget {
     }
   }
 }
-

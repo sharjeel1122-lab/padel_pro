@@ -9,6 +9,7 @@ import 'package:padel_pro/screens/profile_screen/controller/profile_controller.d
 import 'package:padel_pro/screens/profile_screen/vendor_profile_screen.dart';
 import 'package:padel_pro/screens/vendor/tournament/vendor_view_tournament_screen.dart';
 import 'package:padel_pro/screens/vendor/views/club_card.dart';
+import 'package:padel_pro/screens/vendor/views/vendor_bookings_screen.dart';
 import 'package:padel_pro/services/vendors%20api/fetch_club_courts_api.dart';
 
 class VendorDashboardScreen extends StatefulWidget {
@@ -294,22 +295,43 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(50),
-                      child: Image.network(
-                        '#',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Icon(Icons.person, size: 50, color: Colors.white),
-                      ),
+                      child: Obx(() {
+                        if (controllerProfile.isLoading.value) {
+                          return const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          );
+                        }
+
+                        final photo = controllerProfile.profileData['photo'];
+                        final hasPhoto = photo != null && photo.toString().isNotEmpty;
+
+                        return hasPhoto
+                            ? Image.network(
+                          photo,
+                          fit: BoxFit.cover,
+                          // loading indicator while the image bytes load
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            );
+                          },
+                          // fallback if URL breaks
+                          errorBuilder: (_, __, ___) => _defaultAvatar(),
+                        )
+                            : _defaultAvatar();
+                      }),
                     ),
                   ),
+
                   const SizedBox(height: 15),
+
                   // Vendor Name
                   Obx(() {
                     if (controllerProfile.isLoading.value) {
                       return const SizedBox(
                         height: 10,
-                        child: LinearProgressIndicator(
-                            color: Colors.white),
+                        child: LinearProgressIndicator(color: Colors.white),
                       );
                     }
 
@@ -326,33 +348,26 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       ),
                     );
                   }),
-                  // Text(
-                  //   _controllerProfile.fullName ?? "Name",
-                  //   style: TextStyle(
-                  //     color: Colors.white,
-                  //     fontSize: 20,
-                  //     fontWeight: FontWeight.bold,
-                  //   ),
-                  // ),
+
                   const SizedBox(height: 5),
+
                   // Vendor Email
                   Padding(
                     padding: const EdgeInsets.all(9.0),
-                    child:   Obx(() {
+                    child: Obx(() {
                       if (controllerProfile.isLoading.value) {
                         return const SizedBox(
                           height: 10,
-                          child: LinearProgressIndicator(
-                              color: Colors.white),
+                          child: LinearProgressIndicator(color: Colors.white),
                         );
                       }
 
-                      final email = controllerProfile.profileData['email'].isNotEmpty
-                          ? controllerProfile.profileData['email']
-                          : 'Email';
+                      final emailRaw = controllerProfile.profileData['email'];
+                      final email = (emailRaw ?? '').toString().trim();
+                      final safeEmail = email.isNotEmpty ? email : 'Email';
 
                       return Text(
-                        "$email",
+                        safeEmail,
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -360,18 +375,10 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         ),
                       );
                     }),
-
-
-
-                    // Text(
-                    //   _controllerProfile.profileData['email'] ?? "Your email",
-                    //   style: TextStyle(
-                    //     color: Colors.white.withOpacity(0.8),
-                    //     fontSize: 14,
-                    //   ),
-                    // ),
                   ),
+
                   const SizedBox(height: 15),
+
                   // View Profile Button
                   ElevatedButton(
                     onPressed: () => Get.to(VendorProfileScreen()),
@@ -386,7 +393,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                       ),
                       elevation: 5,
                     ),
-                    child: Text(
+                    child: const Text(
                       'View Profile',
                       style: TextStyle(
                         color: Color(0xFF0C1E2C),
@@ -409,46 +416,27 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                     title: 'My Tournaments',
                     onTap: () => Get.to(VendorTournamentsScreen()),
                   ),
-
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Divider(color: Colors.white, thickness: 0.5),
                   ),
-
                   _buildMenuItem(
                     icon: Icons.api,
                     title: 'My Bookings',
                     onTap: () async {
-
+                      Get.to(() => const VendorBookingsScreen());
                     },
                   ),
-                  // _buildMenuItem(
-                  //   icon: Icons.api,
-                  //   title: 'Fetch Test',
-                  //   onTap: () async {
-                  //     try {
-                  //       final playgrounds = await FetchVendorApi()
-                  //           .getVendorPlaygrounds();
-                  //       for (var p in playgrounds) {
-                  //         print('🏟️ Playground: ${p["name"]}');
-                  //       }
-                  //     } catch (e) {
-                  //       print('❌ Error fetching vendor playgrounds: $e');
-                  //     }
-                  //   },
-                  // ),
-
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Divider(color: Colors.white, thickness: 0.5),
                   ),
-
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: _buildMenuItem(
                       icon: Icons.logout,
                       title: 'Logout',
-                      onTap: debugCheckStoredValues,
+                      onTap: logOut,
                       isLogout: true,
                     ),
                   ),
@@ -460,6 +448,15 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
       ),
     );
   }
+
+  Widget _defaultAvatar() {
+    return Container(
+      color: Colors.white.withOpacity(0.15),
+      alignment: Alignment.center,
+      child: const Icon(Icons.person, size: 50, color: Colors.white),
+    );
+  }
+
 
   Widget _buildMenuItem({
     required IconData icon,
@@ -500,10 +497,16 @@ void testVendorPlaygroundApi() async {
   }
 }
 
+
 void debugCheckStoredValues() async {
   final storage = FlutterSecureStorage();
   final token = await storage.read(key: 'token');
   final vendorId = await storage.read(key: 'vendorId');
   print('🧪 token: $token');
   print('🧪 vendorId: $vendorId');
+}
+
+void logOut() async{
+  final AuthController authController = Get.put(AuthController());
+  authController.logout();
 }

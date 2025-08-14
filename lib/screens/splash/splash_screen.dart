@@ -3,13 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/controllers/splash_controller.dart';
-import 'package:padel_pro/screens/login_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 
 
-class OnboardingScreen extends StatelessWidget {
+class OnboardingScreen extends StatefulWidget {
+
+  OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
+
   final OnboardingController controller = Get.find();
 
   final List<Map<String, String>> onboardingData = [
@@ -30,9 +38,14 @@ class OnboardingScreen extends StatelessWidget {
     },
   ];
 
-  OnboardingScreen({super.key});
-
   @override
+
+  void initState() {
+    super.initState();
+    controller.getIsLoggedIn();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,8 +137,19 @@ class OnboardingScreen extends StatelessWidget {
                     onPressed: () {
                       if (controller.isLastPage.value) {
                         controller.markOnboardingSeen();
-                        Get.off(() => LoginScreen());
-                      } else {
+
+                        if(controller.isLoggedIn.value)
+                          {
+                            Get.offNamed('/mpin');
+                          }
+                        else
+                          {
+                            Get.offNamed('/login');
+                          }
+
+
+                      }
+                      else {
                         _pageController.nextPage(
                           duration: Duration(milliseconds: 500),
                           curve: Curves.easeInOut,
@@ -145,5 +169,4 @@ class OnboardingScreen extends StatelessWidget {
       ),
     );
   }
-
 }

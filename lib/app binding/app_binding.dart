@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:padel_pro/controllers/auth%20controllers/m_pin_login_controller.dart';
 import 'package:padel_pro/controllers/auth%20controllers/otp_controller.dart';
 import 'package:padel_pro/controllers/auth%20controllers/vendor_signup_controller.dart';
 import 'package:padel_pro/screens/vendor/tournament/create_tournment_controller.dart';
@@ -34,6 +35,7 @@ class AppBindings implements Bindings {
 
     // Get.lazyPut(() => DashboardController(), fenix: true);
     Get.lazyPut(() => CreateTournamentController(), fenix: true);
+    Get.lazyPut(() => MPINLoginController(), fenix: true);
     // Get.lazyPut(() => ClubController(), fenix: true);
 
   }

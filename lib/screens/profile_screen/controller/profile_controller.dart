@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
+import 'package:padel_pro/services/profile%20api/profile_update_api.dart';
 
 import '../../../services/profile api/user_profile_api.dart';
 
@@ -40,4 +43,60 @@ class ProfileController extends GetxController {
   }
 
   bool get isVendor => profileData['role'] == 'vendor';
+
+  Future<void> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? phone,
+    String? city,
+    String? town,
+    File? imageFile,
+  }) async {
+    try {
+      isLoading.value = true;
+      final api = ProfileUpdateApi();
+      final updated = await api.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        city: city,
+        town: town,
+        photoFile: imageFile,
+      );
+
+      // Refresh local state
+      await fetchProfile();
+
+      final msg = (updated['_message'] as String?) ??
+          'Profile updated successfully';
+      Get.snackbar('Success', msg, snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar('Update failed', e.toString(),
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

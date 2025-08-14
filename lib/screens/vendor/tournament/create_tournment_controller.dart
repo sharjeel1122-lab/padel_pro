@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:padel_pro/services/vendors%20api/create_tournament_api.dart';
+import 'package:padel_pro/services/vendors%20api/delete_vendor_tournament_api.dart';
 
 
 class CreateTournamentController extends GetxController {
@@ -78,4 +79,29 @@ class CreateTournamentController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  //DELETE
+
+  final deletingIds = <String>{}.obs; // to show per-row loader/disable
+  final tournaments = <Map<String, dynamic>>[].obs; // adapt to your model type
+
+  final _api = DeleteVendorTournamentApi();
+
+  Future<void> cancelTournament(String id) async {
+    if (deletingIds.contains(id)) return;
+    deletingIds.add(id);
+    try {
+      final ok = await _api.deleteTournament(id);
+      if (!ok) throw Exception('Failed to delete tournament');
+
+      // remove from local list (adjust key if your item is a model)
+      tournaments.removeWhere((t) => (t['_id'] ?? t['id']) == id);
+      // or await fetch() to refresh from server
+    } finally {
+      deletingIds.remove(id);
+    }
+  }
+
+
+
 }

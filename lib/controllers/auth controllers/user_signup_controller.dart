@@ -3,12 +3,11 @@ import 'package:padel_pro/services/user_signup_api.dart';
 import 'auth_base_controller.dart';
 
 class UserSignUpController extends BaseController {
+  // Ensure a single instance exists
   final UserSignUpApi userSignUpApi = Get.put(UserSignUpApi());
-  final obscureText = true.obs; // Observable for password visibility
+  final obscureText = true.obs;
 
-  void togglePasswordVisibility() {
-    obscureText.toggle();
-  }
+  void togglePasswordVisibility() => obscureText.toggle();
 
   Future<void> signupUser({
     required String firstName,
@@ -17,8 +16,10 @@ class UserSignUpController extends BaseController {
     required String password,
     required String mpin,
     required String city,
+    required String town, // REQUIRED now
     required String phone,
-    String photoPath = '', // Default empty string instead of nullable
+    String role = 'user', // default role
+    String photoPath = '',
   }) async {
     try {
       isLoading(true);
@@ -30,7 +31,9 @@ class UserSignUpController extends BaseController {
         password: password,
         mpin: mpin,
         city: city,
+        town: town,
         phone: phone,
+        role: role,
         photoPath: photoPath,
       );
 
@@ -41,11 +44,7 @@ class UserSignUpController extends BaseController {
 
       Get.offAllNamed('/verify-your-email', arguments: email);
     } catch (e) {
-      showSnackbar(
-        'Signup Failed',
-        e.toString().replaceAll('Exception: ', ''),
-        isError: true,
-      );
+      showSnackbar('Signup Failed', e.toString().replaceAll('Exception: ', ''), isError: true);
     } finally {
       isLoading(false);
     }

@@ -45,7 +45,7 @@ class GroundExploreScreen extends StatelessWidget {
               return RefreshIndicator(
                 color: Colors.black,
                 onRefresh: () async{
-                  groundCtrl.fetchGrounds();
+                  groundCtrl.popularGrounds;
                 },
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),

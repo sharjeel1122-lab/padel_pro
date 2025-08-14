@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 
 class UserFetchAllClubsApi {
   final String baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
-  // final String baseUrl = 'http://192.168.0.101:3000';
-  //
+  // final String baseUrl = 'http://192.168.1.4:3000';
+
 
 
   final _storage = const FlutterSecureStorage();
@@ -13,7 +13,6 @@ class UserFetchAllClubsApi {
   // 🔐 Get token
   Future<String?> _getToken() async => await _storage.read(key: 'token');
 
-  /// ✅ Fetch all clubs with courts (User role)
 
 
 

@@ -5,7 +5,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class GetVendorTournamentsApi {
-  final _baseUrl = 'http://10.248.2.67:3000';
+  // final _baseUrl = 'http://192.168.1.8:3000';
+  static const String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+
   final _storage = const FlutterSecureStorage();
 
   Future<String?> _getToken() async => await _storage.read(key: 'token');

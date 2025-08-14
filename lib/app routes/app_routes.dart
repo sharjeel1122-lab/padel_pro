@@ -14,7 +14,7 @@ abstract class AppRoutes {
   static const EDIT_PROFILE = '/editprofile';
   static const ADD_VENDOR = '/addVendor';
   static const ADD_VENUE = '/addVenue';
-  static const TOTAL_VENUES = '/total-venues';
+  static const TOTAL_USERS = '/total-users';
   static const TOTAL_VENDORS = '/total-vendors';
   static const REQUESTS = '/requests';
   static const MPIN = '/mpin';

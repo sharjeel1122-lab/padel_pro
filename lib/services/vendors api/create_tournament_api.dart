@@ -7,7 +7,9 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 class CreateTournamentApi {
-  final _baseUrl = 'http://10.248.2.67:3000';
+  // final _baseUrl = 'http://192.168.1.4:3000';
+  static const String _baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+
   final _storage = FlutterSecureStorage();
 
   Future<String?> _getToken() async {
@@ -71,18 +73,18 @@ class CreateTournamentApi {
       if (response.statusCode == 201) {
         final data = jsonDecode(body);
         print('Tournament Created: $data');
-        Get.snackbar("Success", "Tournament created!",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white);
+        // Get.snackbar("Success", "Tournament created!",
+        //     snackPosition: SnackPosition.BOTTOM,
+        //     backgroundColor: Colors.green,
+        //     colorText: Colors.white);
       } else {
         print('❌ Failed [${response.statusCode}]: $body');
         throw Exception('Error: ${response.statusCode}\n$body');
       }
     } catch (e) {
       print('❌ Exception: $e');
-      Get.snackbar('Error', e.toString(),
-          backgroundColor: Colors.red, colorText: Colors.white);
+      // Get.snackbar('Error', e.toString(),
+      //     backgroundColor: Colors.red, colorText: Colors.white);
       rethrow;
     }
   }

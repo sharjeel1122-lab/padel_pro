@@ -2,7 +2,9 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:padel_pro/services/admin%20api/admin_request_api.dart';
+import 'package:padel_pro/services/user%20role%20api%20service/user_fetch_allclubs_api.dart';
 
 class DashboardController extends GetxController {
   var totalCourts = 0.obs;
@@ -47,11 +49,11 @@ class DashboardController extends GetxController {
   //load states of stateGrid Admin
   Future<void> loadStats() async {
     try {
+
       final pendingVendors = await AdminRequestApi.fetchPendingVendors();
       requests.value = pendingVendors.length;
-
-      // You can also load other stats:
-      // totalCourts.value = await CourtApi.count();
+      // final totalCourts = await UserFetchAllClubsApi.fetchAllPlaygrounds();
+      // totalCourts.value =   totalCourts.length;
       // vendors.value = await VendorApi.count();
       // products.value = await ProductApi.count();
     } catch (e) {

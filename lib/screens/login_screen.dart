@@ -12,7 +12,7 @@ class LoginScreen extends StatelessWidget {
   final _emailPhoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  final AuthController authController = Get.find<AuthController>();
+  final AuthController authController = Get.put(AuthController());
 
 
   @override
@@ -143,6 +143,19 @@ class LoginScreen extends StatelessWidget {
                   ),
                 )),
                 const SizedBox(height: 40),
+
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Get.toNamed('/reset/request'), // or '/reset-verify' if you keep OTP UI
+                    child: Text(
+                      'Forgot password?',
+                      style: GoogleFonts.poppins(color: Color(0xFF072A40), fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     const Expanded(child: Divider()),

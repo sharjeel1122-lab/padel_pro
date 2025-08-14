@@ -1,8 +1,12 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
 class UserMPINLoginApi {
-  static const String baseUrl = 'http://10.248.2.67:3000';
+  // static const String baseUrl = 'http://192.168.1.6:3000';
+  static const String baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+
+
   static Future<Map<String, dynamic>> loginWithMPIN(String mpin) async {
     final url = Uri.parse('$baseUrl/api/mpin');
 
@@ -13,11 +17,12 @@ class UserMPINLoginApi {
         body: jsonEncode({'mpin': mpin}),
       );
 
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final data = responseData['data'];
+      final responseData = jsonDecode(response.body);
 
-        if (data == null || data['token'] == null || data['user'] == null) {
+      if (response.statusCode == 200) {
+        final data = responseData['data'] ?? {};
+
+        if (data['token'] == null || data['user'] == null) {
           throw Exception('Token or user missing in response');
         }
 
@@ -26,8 +31,7 @@ class UserMPINLoginApi {
           'user': data['user'],
         };
       } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['message'] ?? 'MPIN login failed');
+        throw Exception(responseData['message'] ?? 'MPIN login failed');
       }
     } catch (e) {
       print('❌ MPIN login error: $e');

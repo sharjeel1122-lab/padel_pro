@@ -14,7 +14,7 @@ class AllTournamentController extends GetxController {
       tournaments.assignAll(data);
     } catch (e) {
       print('❌ Fetch tournament error: $e');
-      Get.snackbar('Error', 'Failed to fetch tournaments');
+      // Get.snackbar('Error', 'Failed to fetch tournaments');
     } finally {
       isLoading.value = false;
     }

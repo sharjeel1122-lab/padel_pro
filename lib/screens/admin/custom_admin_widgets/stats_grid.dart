@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:padel_pro/screens/admin/controllers/dashboard_controller.dart';
+import 'package:padel_pro/screens/admin/total%20clubs/admin_total_club_screen.dart';
 
 class StatsGrid extends StatelessWidget {
   final controller = Get.find<DashboardController>();
@@ -21,10 +22,10 @@ class StatsGrid extends StatelessWidget {
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       children: [
-        _statCard(Icons.sports_tennis, "Total Venues", "${controller.totalCourts.value}"),
-        _statCard(Icons.people, "Vendors", "${controller.vendors.value}"),
-        _statCard(Icons.store, "Products", "${controller.products.value}"),
-        _statCard(Icons.notifications_active, "Requests", "${controller.requests.value}"),
+        _statCard(Icons.sports_tennis, "Total Users", "${controller.totalCourts.value}"),
+        _statCard(Icons.people, "Total Vendors", "${controller.vendors.value}"),
+        _statCard(Icons.local_convenience_store, "Total Clubs", "${controller.products.value}"),
+        _statCard(Icons.notifications_active, "Pending Requests", "${controller.requests.value}"),
       ],
     ));
   }
@@ -32,13 +33,13 @@ class StatsGrid extends StatelessWidget {
   Widget _statCard(IconData icon, String label, String count) {
     return GestureDetector(
       onTap: () {
-        if (label == "Total Venues") {
-          Get.toNamed('/total-venues');
-        } else if (label == "Vendors") {
+        if (label == "Total Users") {
+          Get.toNamed('/total-users');
+        } else if (label == "Total Vendors") {
           Get.toNamed('/total-vendors');
-        } else if (label == "Products") {
-          Get.toNamed('/products');
-        } else if (label == "Requests") {
+        } else if (label == "Total Clubs") {
+          Get.to(AdminClubScreen());
+        } else if (label == "Pending Requests") {
           Get.toNamed('/requests');
         }
       },

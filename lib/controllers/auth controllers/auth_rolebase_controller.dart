@@ -207,6 +207,15 @@ class AuthController extends GetxController {
 
       await Future.delayed(const Duration(seconds: 1));
 
+
+      await storage.write(key: 'isLoggedIn', value: 'true');
+
+      final savedToken2 = await storage.read(key: 'isLoggedIn');
+
+      print("Check Save Token 2: ${savedToken2}");
+
+
+
       switch (role.toLowerCase()) {
         case 'admin':
           Get.offAllNamed('/admin-dashboard');
@@ -234,7 +243,8 @@ class AuthController extends GetxController {
     try {
       await storage.delete(key: 'token');
       await storage.delete(key: 'role');
-      saveVendorId.remove('vendorId'); // ✅ Clear vendorId on logout
+
+      saveVendorId.remove('vendorId'); //
 
       Get.snackbar(
         'Logged Out',
@@ -243,7 +253,13 @@ class AuthController extends GetxController {
         backgroundColor: Colors.blue,
         colorText: Colors.white,
       );
-      Get.offAllNamed('/login');
+      await storage.write(key: 'isLoggedIn', value: 'true');
+      final savedToken2 = await storage.read(key: 'isLoggedIn');
+
+      print("Check Save Token Read: ${savedToken2}");
+
+      Get.offAllNamed('/splash');
+
     } catch (e) {
       Get.snackbar(
         'Logout Error',

@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:padel_pro/screens/admin/total%20users/total_users_screen.dart';
+import 'package:padel_pro/screens/password%20reset%20screens/reset_password_new.dart';
 
 import 'package:padel_pro/screens/vendor/views/pending_approval_screen.dart';
 import 'package:padel_pro/screens/vendor/views/vendor_dashboard.dart';
@@ -77,10 +79,10 @@ abstract class AppPages {
       page: () => VendorDashboardScreen(),
     ),
 
-    // GetPage(
-    //   name: AppRoutes.TOTAL_VENUES,
-    //   page: () => TotalVenuesScreen(),
-    // ),
+    GetPage(
+      name: AppRoutes.TOTAL_USERS,
+      page: () => TotalUsersScreen(),
+    ),
     GetPage(
       name: AppRoutes.TOTAL_VENDORS,
       page: () => TotalVendorsScreen(),
@@ -116,5 +118,7 @@ abstract class AppPages {
       name: AppRoutes.PENDING_SCREEN,
       page: () => PendingApprovalScreen(contactNumber: '03014530509'),
     ),
+
+    GetPage(name: '/reset/request', page: () => ResetPasswordRequestScreen()),
   ];
 }
