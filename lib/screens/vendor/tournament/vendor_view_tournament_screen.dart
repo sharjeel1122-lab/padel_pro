@@ -408,7 +408,7 @@ class _VendorTournamentsScreenState extends State<VendorTournamentsScreen> {
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => Get.to(() => CreateTournamentScreen()),
-            child: const Text('Create your first tournament'),
+            child: const Text('Create your first tournament', style: TextStyle(color: Colors.white),),
           ),
         ],
       ),

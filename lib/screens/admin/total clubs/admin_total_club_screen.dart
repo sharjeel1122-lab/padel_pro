@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:padel_pro/screens/admin/total%20clubs/admin_total_club_details.dart';
 import 'package:padel_pro/screens/admin/total%20clubs/recommended_status_controller.dart';
 
 // your existing controllers & screens
@@ -137,6 +138,11 @@ class AdminClubScreen extends StatelessWidget {
     final rating = playground['rating'] ?? 4.5;
     final courts = (playground['courts'] ?? []) as List;
     final isRecommended = (playground['recommended'] ?? false) as bool;
+    final photos = (playground['photos'] as List<dynamic>?)
+        ?.where((e) => e != null)
+        .toList()
+        ?? [];
+    print("😁😁😁${playground}");
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -162,8 +168,7 @@ class AdminClubScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Image.network(
-              playground['image'] ??
-                  'https://www.shutterstock.com/image-illustration/indoor-padel-paddle-tennis-court-260nw-2486054935.jpg',
+              photos.isNotEmpty ? photos[0] : 'https://via.placeholder.com/180x180',
               height: 180,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -288,7 +293,7 @@ class AdminClubScreen extends StatelessWidget {
                 Row(
                   children: [
                     OutlinedButton.icon(
-                      onPressed: () => Get.to(() => UserClubDetailScreen(playground: playground)),
+                      onPressed: () => Get.to(() => AdminClubDetailScreen(playground: playground)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: kPrimary),
                         foregroundColor: kPrimary,

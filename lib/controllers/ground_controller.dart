@@ -1,37 +1,46 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:async';                      // <-- POLLING: Timer
+import 'dart:async';                      // POLLING: Timer
 import 'dart:developer' as dev;           // logs
 import 'package:flutter/foundation.dart'; // kDebugMode
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
+
 import 'package:padel_pro/services/user role api service/get_recommended_api.dart';
 import '../model/ground_model.dart';
 
 class GroundController extends GetxController {
+  /// Data
   final popularGrounds = <Ground>[].obs;
+
+  /// UI / filters
   final searchText = ''.obs;
   final userPosition = Rxn<Position>();
+
+  /// Loading state for the "Popular" section
+  final isPopularLoading = true.obs;
+
+  /// API
   final _api = GetRecommendedClub();
 
-  // Workers (auto log on changes)
+  /// Workers (auto log on changes)
   Worker? _groundsWorker;
   Worker? _searchWorker;
   Worker? _posWorker;
 
-  // ---- POLLING additions ----
+  /// POLLING
   Timer? _poller;
-  final Duration _pollInterval = const Duration(seconds: 6); // <- change to 5s if you want
+  final Duration _pollInterval = const Duration(seconds: 5); // silent refresh every ~5s
   bool _isFetching = false;
-  // ---------------------------
 
   // Filtered + Sorted list
   List<Ground> get filteredGrounds {
     final search = searchText.value.toLowerCase();
 
     var list = popularGrounds.where((g) {
-      return g.title.toLowerCase().contains(search) ||
-          g.subtitle.toLowerCase().contains(search);
+      final title = (g.title ?? '').toLowerCase();
+      final sub   = (g.subtitle ?? '').toLowerCase();
+      return title.contains(search) || sub.contains(search);
     }).toList();
 
     if (userPosition.value != null) {
@@ -81,9 +90,14 @@ class GroundController extends GetxController {
       }
     });
 
-    fetchFromApi();     // initial load
-    _getUserLocation(); // location
-    _startPolling();    // <-- start silent polling
+    // First load (skeletons visible)
+    fetchFromApi(quiet: false);
+
+    // Location
+    _getUserLocation();
+
+    // Start silent polling
+    _startPolling();
   }
 
   @override
@@ -92,31 +106,31 @@ class GroundController extends GetxController {
     _searchWorker?.dispose();
     _posWorker?.dispose();
 
-    // ---- POLLING cleanup ----
     _poller?.cancel();
     _poller = null;
-    // -------------------------
+
     super.onClose();
   }
 
-  // PUBLIC: Manual refresh (UI se pull-to-refresh ya retry pe call kar sakhte ho)
+  // PUBLIC: Manual refresh (pull-to-refresh / retry)
   Future<void> fetchFromApi({bool quiet = false}) async {
-    if (_isFetching) return; // overlap se bacho
+    if (_isFetching) return; // avoid overlap
     _isFetching = true;
 
-    if (!quiet && kDebugMode) dev.log('fetchFromApi() -> start', name: 'GroundController');
+    if (!quiet) {
+      isPopularLoading.value = true; // show skeleton only on first/explicit loads
+      if (kDebugMode) dev.log('fetchFromApi() -> start', name: 'GroundController');
+    }
+
     try {
       final data = await _api.fetchRecommended();
+
       if (!quiet && kDebugMode) {
         dev.log('fetchFromApi() -> got ${data.length} items', name: 'GroundController');
       }
 
-      final onlyRecommended = data.where((g) => g.recommended).toList();
-      if (!quiet && kDebugMode) {
-        dev.log('recommended filtered -> ${onlyRecommended.length}', name: 'GroundController');
-      }
+      final onlyRecommended = data.where((g) => g.recommended == true).toList();
 
-      // Optional: Avoid unnecessary UI rebuilds (only update if changed)
       if (_listsAreDifferent(popularGrounds, onlyRecommended)) {
         popularGrounds.assignAll(onlyRecommended);
       }
@@ -130,38 +144,41 @@ class GroundController extends GetxController {
       if (!quiet && kDebugMode) {
         dev.log('fetchFromApi() ERROR: $e', name: 'GroundController', stackTrace: st);
       }
-      // quiet mode me list clear na karo (UI flash avoid)
-      if (!quiet) popularGrounds.clear();
+      if (!quiet) popularGrounds.clear(); // do not clear in quiet mode (no flash)
     } finally {
-      if (!quiet && kDebugMode) dev.log('fetchFromApi() -> end', name: 'GroundController');
+      if (!quiet) {
+        isPopularLoading.value = false; // hide skeletons
+        if (kDebugMode) dev.log('fetchFromApi() -> end', name: 'GroundController');
+      }
       _isFetching = false;
     }
   }
 
-  // ---- POLLING helpers ----
+  // POLLING helpers
   void _startPolling() {
     _poller?.cancel();
     _poller = Timer.periodic(_pollInterval, (_) async {
-      // silent refetch (quiet = true) -> kam logs, no list clear on error
+      // silent refetch (quiet = true): no skeletons, no list clear on error
       await fetchFromApi(quiet: true);
     });
     if (kDebugMode) {
       dev.log('Polling started every ${_pollInterval.inSeconds}s', name: 'GroundController');
     }
   }
+
   // Basic shallow compare by length + first/last ids (cheap); adjust if needed
   bool _listsAreDifferent(List<Ground> a, List<Ground> b) {
     if (identical(a, b)) return false;
     if (a.length != b.length) return true;
     if (a.isEmpty) return false;
-    // compare first & last titles/ids quickly
-    final aFirst = a.first.id.isNotEmpty ? a.first.id : a.first.title;
-    final bFirst = b.first.id.isNotEmpty ? b.first.id : b.first.title;
-    final aLast  = a.last.id.isNotEmpty  ? a.last.id  : a.last.title;
-    final bLast  = b.last.id.isNotEmpty  ? b.last.id  : b.last.title;
+
+    final aFirst = (a.first.id?.isNotEmpty ?? false) ? a.first.id! : (a.first.title ?? '');
+    final bFirst = (b.first.id?.isNotEmpty ?? false) ? b.first.id! : (b.first.title ?? '');
+    final aLast  = (a.last.id?.isNotEmpty  ?? false) ? a.last.id!  : (a.last.title  ?? '');
+    final bLast  = (b.last.id?.isNotEmpty  ?? false) ? b.last.id!  : (b.last.title  ?? '');
+
     return aFirst != bFirst || aLast != bLast;
   }
-  // -------------------------
 
   Future<void> _getUserLocation() async {
     if (kDebugMode) dev.log('_getUserLocation() start', name: 'GroundController');

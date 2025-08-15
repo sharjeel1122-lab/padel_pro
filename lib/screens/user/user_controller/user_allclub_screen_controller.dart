@@ -11,7 +11,7 @@ class UserClubScreenController extends GetxController {
   // Example:
   // const String BASE_URL = 'https://api.padelpro.pk'; // <-- CHANGE THIS
   // If your API returns "/uploads/xyz.jpg", final URL becomes "https://api.padelpro.pk/uploads/xyz.jpg"
-  static const String BASE_URL = 'https://your-backend.example.com'; // TODO set correctly
+  static const String BASE_URL = 'https://padel-backend-git-main-invosegs-projects.vercel.app'; // TODO set correctly
 
   // Optional: if backend gives just an id and you need to hit /files/:id
   // static const String FILE_ENDPOINT_PREFIX = '$BASE_URL/files/';

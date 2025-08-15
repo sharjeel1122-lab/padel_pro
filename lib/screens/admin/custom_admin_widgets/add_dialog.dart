@@ -30,10 +30,10 @@ class AddDialog extends StatelessWidget {
                   Get.toNamed('/addVendor');
 
                 }),
-                _optionButton("Add Venue", Icons.sports_tennis, () {
-                  Get.back();
-                  Get.toNamed('/addVenue');
-                }),
+                // _optionButton("Add Venue", Icons.sports_tennis, () {
+                //   Get.back();
+                //   Get.toNamed('/addVenue');
+                // }),
               ],
             )
           ],

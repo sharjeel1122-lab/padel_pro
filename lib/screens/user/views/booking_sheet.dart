@@ -1,8 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../controllers/booking controller/booking_controller.dart';
+import '../../../controllers/booking controller/booked_slots_controller.dart';
 
 class BookingSheet extends StatelessWidget {
   const BookingSheet({
@@ -14,10 +17,9 @@ class BookingSheet extends StatelessWidget {
   final String playgroundId;
   final List courts;
 
-  // ---- Helpers ----
+  // ---- helpers ----
 
   List<String> _extractCourtNumbers() {
-    // Prefer backend "courtNumber", fallback to "courtName"
     final set = <String>{};
     for (final c in courts) {
       final raw = (c['courtNumber'] ?? c['courtName'] ?? '').toString().trim();
@@ -39,8 +41,7 @@ class BookingSheet extends StatelessWidget {
     Iterable courtList = courts;
     if (courtNumber != null && courtNumber.isNotEmpty) {
       courtList = courts.where((c) =>
-      (c['courtNumber']?.toString() ?? c['courtName']?.toString() ?? '') ==
-          courtNumber);
+      (c['courtNumber']?.toString() ?? c['courtName']?.toString() ?? '') == courtNumber);
     }
 
     for (final c in courtList) {
@@ -51,17 +52,16 @@ class BookingSheet extends StatelessWidget {
       }
     }
     final list = durations.toList()..sort();
-    return list.isEmpty ? [60] : list; // sensible default
+    return list.isEmpty ? [60] : list;
   }
 
   num? _priceFor(String? courtNumber, int? duration) {
     if (courtNumber == null || courtNumber.isEmpty || duration == null) return null;
 
-    final court = courts.firstWhereOrNull((c) =>
-    (c['courtNumber']?.toString() ?? c['courtName']?.toString() ?? '') ==
-        courtNumber);
-
-    if (court == null) return null;
+    final idx = courts.indexWhere((c) =>
+    (c['courtNumber']?.toString() ?? c['courtName']?.toString() ?? '') == courtNumber);
+    if (idx < 0) return null;
+    final court = courts[idx];
 
     final pricing = (court['pricing'] as List?) ?? [];
     for (final p in pricing) {
@@ -86,24 +86,20 @@ class BookingSheet extends StatelessWidget {
     return selected.isBefore(now);
   }
 
-  /// Round `now` up to the next 15-minute mark and return as TimeOfDay.
-  TimeOfDay _nextUpcomingSlot15m(DateTime base) {
-    final add = (15 - (base.minute % 15)) % 15;
-    final rounded = base.add(Duration(minutes: add == 0 ? 15 : add));
-    return TimeOfDay(hour: rounded.hour, minute: rounded.minute - (rounded.minute % 15));
-  }
-
-  Future<void> _pickDate(BuildContext context, BookingController ctrl) async {
+  Future<void> _pickDate(
+      BuildContext context,
+      BookingController ctrl,
+      BookedSlotsController bCtrl,
+      ) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final initial = ctrl.selectedDate.value ?? today;
 
     final picked = await showDatePicker(
       context: context,
-      firstDate: today, // ⛔️ no past dates
+      firstDate: today,
       lastDate: today.add(const Duration(days: 120)),
       initialDate: initial.isBefore(today) ? today : initial,
-      useRootNavigator: true, // show above the bottom sheet
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.light(
@@ -112,42 +108,60 @@ class BookingSheet extends StatelessWidget {
             surface: Colors.white,
             onSurface: Colors.black,
           ),
-          textTheme: Theme.of(context)
-              .textTheme
-              .apply(bodyColor: Colors.black, displayColor: Colors.black),
+          textTheme: Theme.of(context).textTheme.apply(
+            bodyColor: Colors.black,
+            displayColor: Colors.black,
+          ),
         ),
         child: child!,
       ),
     );
 
     if (picked != null) {
-      // If switching to today and time is in the past, clear time
       final t = ctrl.selectedTime.value;
       if (t != null && _isPastTodayTime(picked, t)) {
         ctrl.selectedTime.value = null;
         ctrl.selectedTime.refresh();
       }
       ctrl.selectedDate.value = picked;
+
+      final courtStr = ctrl.selectedCourtNumber.value;
+      if (courtStr != null && courtStr.isNotEmpty) {
+        final cnum = int.tryParse(courtStr);
+        if (cnum != null) {
+          await bCtrl.load(
+            playgroundId: ctrl.playgroundId,
+            courtNumber: cnum,
+            dateIso: _formatDate(picked),
+          );
+          final st = ctrl.selectedTime.value;
+          final dur = ctrl.selectedDuration.value ?? 0;
+          if (st != null &&
+              (dur > 0 ? bCtrl.wouldConflict(st, dur) : bCtrl.isBookedStart(st))) {
+            ctrl.selectedTime.value = null;
+            ctrl.selectedTime.refresh();
+          }
+        }
+      }
     }
   }
 
-  Future<void> _pickTime(BuildContext context, BookingController ctrl) async {
-    final date = ctrl.selectedDate.value ?? DateTime.now();
-    final today = DateTime.now();
-    final isToday = DateTime(date.year, date.month, date.day) ==
-        DateTime(today.year, today.month, today.day);
-
-    // Initial time: if today -> next 15-min upcoming slot, else fallback 10:00
-    final initialTOD = isToday
-        ? _nextUpcomingSlot15m(today)
-        : const TimeOfDay(hour: 10, minute: 0);
+  Future<void> _pickTime(
+      BuildContext context,
+      BookingController ctrl,
+      BookedSlotsController bCtrl,
+      ) async {
+    final init = ctrl.selectedTime.value ?? const TimeOfDay(hour: 10, minute: 0);
 
     final picked = await showTimePicker(
       context: context,
-      initialTime: initialTOD,
-      useRootNavigator: true, // show above the bottom sheet
+      initialTime: init,
+      // ✅ open on dial (avoids input-mode oddities)
+      initialEntryMode: TimePickerEntryMode.dial,
+      // ✅ use root navigator so dialog isn't nested under the sheet
+      useRootNavigator: true,
       builder: (context, child) {
-        // 🔒 Force 24-hour picker
+        // ✅ Force 24h format
         final mq = MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true);
         return MediaQuery(
           data: mq,
@@ -181,21 +195,28 @@ class BookingSheet extends StatelessWidget {
     );
 
     if (picked != null) {
-      // If today and user chose a past time, override to next upcoming slot + message
-      if (isToday && _isPastTodayTime(date, picked)) {
-        final nextSlot = _nextUpcomingSlot15m(DateTime.now());
-        ctrl.selectedTime.value = nextSlot;
-        ctrl.selectedTime.refresh();
+      final date = ctrl.selectedDate.value ?? DateTime.now();
+      final today = DateTime.now();
+      final dateOnly = DateTime(date.year, date.month, date.day);
+      final todayOnly = DateTime(today.year, today.month, today.day);
+
+      if (dateOnly == todayOnly && _isPastTodayTime(date, picked)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Past time is not allowed. Set to next available: ${_formatTime(nextSlot)}',
-            ),
-          ),
+          const SnackBar(content: Text('Please select a future time.')),
         );
         return;
       }
 
+      final dur = ctrl.selectedDuration.value ?? 0;
+      final conflicts = dur > 0 ? bCtrl.wouldConflict(picked, dur) : bCtrl.isBookedStart(picked);
+      if (conflicts) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('This slot is already booked. Please select another.')),
+        );
+        return;
+      }
+
+      // ✅ instant UI update
       ctrl.selectedTime.value = picked;
       ctrl.selectedTime.refresh();
     }
@@ -205,10 +226,12 @@ class BookingSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final courtNumbers = _extractCourtNumbers();
 
-    // unique tag so this temp controller dies with the sheet
-    final tag = 'booking-${playgroundId}-${DateTime.now().millisecondsSinceEpoch}';
+    // stable tag so controllers aren't recreated
+    final tag = 'booking-$playgroundId';
 
-    final ctrl = Get.put(
+    final ctrl = Get.isRegistered<BookingController>(tag: tag)
+        ? Get.find<BookingController>(tag: tag)
+        : Get.put(
       BookingController(
         playgroundId: playgroundId,
         availableCourts: courtNumbers,
@@ -217,15 +240,16 @@ class BookingSheet extends StatelessWidget {
       tag: tag,
     );
 
-    // preselect sensible defaults
+    final bCtrl = Get.isRegistered<BookedSlotsController>(tag: 'booked-$tag')
+        ? Get.find<BookedSlotsController>(tag: 'booked-$tag')
+        : Get.put(BookedSlotsController(), tag: 'booked-$tag');
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     ctrl.selectedCourtNumber.value ??= courtNumbers.isNotEmpty ? courtNumbers.first : null;
     ctrl.selectedDate.value ??= today;
-    // time stays null until user picks — UI will show "Select time"
 
     return Obx(() {
-      // reactive touches
       final selectedCourt = ctrl.selectedCourtNumber.value;
       final selectedTime = ctrl.selectedTime.value;
       final selectedDuration = ctrl.selectedDuration.value;
@@ -234,10 +258,22 @@ class BookingSheet extends StatelessWidget {
       final dateString = dateVal == null ? '' : _formatDate(dateVal);
       final timeString = selectedTime == null ? '' : _formatTime(selectedTime);
 
-      // durations for the selected court
+      if (bCtrl.booked.value == null &&
+          selectedCourt != null &&
+          selectedCourt.isNotEmpty &&
+          dateVal != null) {
+        final cnum = int.tryParse(selectedCourt);
+        if (cnum != null) {
+          bCtrl.load(
+            playgroundId: ctrl.playgroundId,
+            courtNumber: cnum,
+            dateIso: _formatDate(dateVal),
+          );
+        }
+      }
+
       final durations = _extractDurationsFor(selectedCourt);
 
-      // keep duration valid
       if (durations.isNotEmpty &&
           (selectedDuration == null || !durations.contains(selectedDuration))) {
         ctrl.selectedDuration.value = durations.first;
@@ -246,9 +282,20 @@ class BookingSheet extends StatelessWidget {
         ctrl.selectedDuration.value = null;
       }
 
-      // compute price
       final currentPrice = _priceFor(selectedCourt, ctrl.selectedDuration.value);
       final priceString = currentPrice == null ? '—' : 'Rs. $currentPrice';
+
+      final bool pickedConflicts = (selectedTime != null)
+          ? (ctrl.selectedDuration.value ?? 0) > 0
+          ? bCtrl.wouldConflict(selectedTime, ctrl.selectedDuration.value!)
+          : bCtrl.isBookedStart(selectedTime)
+          : false;
+
+      final canSubmit = !ctrl.isLoading.value &&
+          !pickedConflicts &&
+          selectedTime != null &&
+          (ctrl.selectedDuration.value ?? 0) > 0 &&
+          (selectedCourt != null && selectedCourt.isNotEmpty);
 
       return DraggableScrollableSheet(
         expand: false,
@@ -264,7 +311,7 @@ class BookingSheet extends StatelessWidget {
             children: [
               ListView(
                 controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 130),
                 children: [
                   Center(
                     child: Container(
@@ -293,7 +340,7 @@ class BookingSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
 
-                  // Court selector (backend numbers)
+                  // Court selector
                   const Text('Court', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   if (courtNumbers.isEmpty)
@@ -302,12 +349,32 @@ class BookingSheet extends StatelessWidget {
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: courtNumbers.map((num) {
-                        final isSelected = selectedCourt == num;
+                      children: courtNumbers.map((numStr) {
+                        final isSelected = selectedCourt == numStr;
                         return ChoiceChip(
-                          label: Text(num),
+                          label: Text(numStr),
                           selected: isSelected,
-                          onSelected: (_) => ctrl.selectedCourtNumber.value = num,
+                          onSelected: (_) async {
+                            ctrl.selectedCourtNumber.value = numStr;
+
+                            final cnum = int.tryParse(numStr);
+                            final d = ctrl.selectedDate.value;
+                            if (cnum != null && d != null) {
+                              await bCtrl.load(
+                                playgroundId: ctrl.playgroundId,
+                                courtNumber: cnum,
+                                dateIso: _formatDate(d),
+                              );
+                            }
+
+                            final t = ctrl.selectedTime.value;
+                            final dur = ctrl.selectedDuration.value ?? 0;
+                            if (t != null &&
+                                (dur > 0 ? bCtrl.wouldConflict(t, dur) : bCtrl.isBookedStart(t))) {
+                              ctrl.selectedTime.value = null;
+                              ctrl.selectedTime.refresh();
+                            }
+                          },
                           selectedColor: const Color(0xFF0C1E2C),
                           labelStyle: TextStyle(
                             color: isSelected ? Colors.white : const Color(0xFF0C1E2C),
@@ -329,7 +396,7 @@ class BookingSheet extends StatelessWidget {
                           icon: LucideIcons.calendar,
                           label: 'Date',
                           value: dateString.isEmpty ? 'Select date' : dateString,
-                          onTap: () => _pickDate(context, ctrl),
+                          onTap: () => _pickDate(context, ctrl, bCtrl),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -337,15 +404,7 @@ class BookingSheet extends StatelessWidget {
                         child: _FieldCard(
                           icon: LucideIcons.clock,
                           label: 'Start Time',
-                          value: timeString.isEmpty
-                              ? (DateTime.now().difference(
-                              DateTime((dateVal ?? DateTime.now()).year,
-                                  (dateVal ?? DateTime.now()).month,
-                                  (dateVal ?? DateTime.now()).day)) ==
-                              Duration.zero
-                              ? 'Select time (next: ${_formatTime(_nextUpcomingSlot15m(DateTime.now()))})'
-                              : 'Select time')
-                              : timeString,
+                          value: timeString.isEmpty ? 'Select time' : timeString,
                           onTap: () {
                             if (ctrl.selectedDate.value == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -353,16 +412,33 @@ class BookingSheet extends StatelessWidget {
                               );
                               return;
                             }
-                            _pickTime(context, ctrl);
+                            _pickTime(context, ctrl, bCtrl);
                           },
                         ),
                       ),
                     ],
                   ),
 
+                  if (pickedConflicts)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.error_outline, color: Colors.red, size: 18),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'This slot is already booked. Please select another.',
+                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   const SizedBox(height: 16),
 
-                  // Duration + Price chips
+                  // Duration + Price
                   const Text('Duration', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   if (durations.isEmpty)
@@ -390,9 +466,60 @@ class BookingSheet extends StatelessWidget {
                       }).toList(),
                     ),
 
+                  const SizedBox(height: 14),
+
+                  // Booked slots list (chips)
+                  Obx(() {
+                    final loading = bCtrl.isLoading.value;
+                    final data = bCtrl.booked.value;
+                    if (loading) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 6),
+                        child: LinearProgressIndicator(minHeight: 3),
+                      );
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(LucideIcons.info, size: 18, color: Colors.black54),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Booked on ${dateString.isEmpty ? 'selected date' : dateString}',
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (data == null || data.bookedSlots.isEmpty)
+                          const Text(
+                            'No bookings — all slots open so far.',
+                            style: TextStyle(color: Colors.black54),
+                          )
+                        else
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: data.bookedSlots
+                                .map((s) => Chip(
+                              label: Text(s.timeSlot),
+                              backgroundColor: Colors.red.withOpacity(0.08),
+                              side: BorderSide(color: Colors.red.withOpacity(0.3)),
+                              labelStyle: const TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ))
+                                .toList(),
+                          ),
+                      ],
+                    );
+                  }),
+
                   const SizedBox(height: 20),
 
-                  // Responsive summary (now with Price)
+                  // Summary
                   _ResponsiveSummary(
                     court: selectedCourt ?? '—',
                     date: dateString.isEmpty ? '—' : dateString,
@@ -411,7 +538,7 @@ class BookingSheet extends StatelessWidget {
                 right: 16,
                 bottom: 20,
                 child: ElevatedButton.icon(
-                  onPressed: ctrl.isLoading.value ? null : ctrl.submit,
+                  onPressed: canSubmit ? ctrl.submit : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0C1E2C),
                     foregroundColor: Colors.white,
@@ -433,9 +560,13 @@ class BookingSheet extends StatelessWidget {
                   label: Text(
                     ctrl.isLoading.value
                         ? 'Booking...'
+                        : (!canSubmit
+                        ? (pickedConflicts
+                        ? 'Slot booked — pick another'
+                        : 'Select court, date, time & duration')
                         : (currentPrice == null
                         ? 'Confirm Booking'
-                        : 'Confirm Booking • Rs. $currentPrice'),
+                        : 'Confirm Booking • Rs. $currentPrice')),
                   ),
                 ),
               ),
@@ -446,6 +577,8 @@ class BookingSheet extends StatelessWidget {
     });
   }
 }
+
+/// ---------------- UI bits ----------------
 
 class _FieldCard extends StatelessWidget {
   const _FieldCard({
@@ -561,7 +694,6 @@ class _ResponsiveSummary extends StatelessWidget {
       final w = c.maxWidth;
 
       if (w >= 860) {
-        // 5 across
         return Row(
           children: [
             Expanded(child: _SummaryTile(title: 'Court', value: court, icon: LucideIcons.doorOpen)),
@@ -576,7 +708,6 @@ class _ResponsiveSummary extends StatelessWidget {
           ],
         );
       } else if (w >= 560) {
-        // 3 + 2 layout
         return Column(
           children: [
             Row(
@@ -599,7 +730,6 @@ class _ResponsiveSummary extends StatelessWidget {
           ],
         );
       } else {
-        // stacked
         return Column(
           children: [
             _SummaryTile(title: 'Court', value: court, icon: LucideIcons.doorOpen),

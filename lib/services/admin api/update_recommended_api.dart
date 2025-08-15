@@ -13,7 +13,7 @@ class ApiResponse {
 
 class RecommendedStatusService {
   // TODO: Set your real base URL
-  static const String baseUrl = 'https://your-api.example.com/api';
+  static const String baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
 
   // If your backend route is different, adjust the path below accordingly.
   // Backend given:

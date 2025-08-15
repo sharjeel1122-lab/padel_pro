@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/services/user_mpin_login_api.dart';
 
 class MPINLoginController extends GetxController {
   final isLoading = false.obs;
+  final storage = const FlutterSecureStorage();
 
   Future<void> loginWithMPIN(String mpin) async {
     if (mpin.length != 4) return;
@@ -21,11 +23,16 @@ class MPINLoginController extends GetxController {
       final token = result['token'];
       final user  = result['user'];
 
+
       if (token == null || user == null) {
         throw Exception('Token or user missing in response');
       }
-
+      final id = user['id']; final email = user['email'];
       final role = (user['role'] ?? '').toString().toLowerCase();
+      await storage.write(key: 'token', value: token);
+      await storage.write(key: 'role', value: role);
+      await storage.write(key: 'email', value: email);
+
 
       print("Check Role${role}");
 

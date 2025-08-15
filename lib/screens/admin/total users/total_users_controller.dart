@@ -39,7 +39,7 @@ class TotalUsersController extends GetxController {
     await fetchUsers(); // fetch data (handles its own errors)
 
     final elapsed = DateTime.now().difference(start);
-    final minDuration = const Duration(seconds: 10);
+    final minDuration = const Duration(seconds: 5);
     final remaining = minDuration - elapsed;
 
     if (remaining > Duration.zero) {
@@ -51,7 +51,7 @@ class TotalUsersController extends GetxController {
   Future<void> fetchUsers() async {
     try {
       final result = await service.fetchUsers();
-      users.assignAll(result);
+      users.assignAll(result.where((u) => u.role == 'user'));
     } catch (e) {
       // error UI optional; remove if you want it fully silent
       Get.snackbar("Error", e.toString());

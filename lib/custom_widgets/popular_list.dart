@@ -1,21 +1,37 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter/foundation.dart'; // kDebugMode, debugPrint
+import 'package:flutter/foundation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:padel_pro/controllers/ground_controller.dart';
 import 'package:padel_pro/screens/user/views/booking_screen.dart';
+import 'package:padel_pro/screens/user/views/user_allclub_details_screen.dart';
 import 'package:padel_pro/screens/user/views/user_allclub_screen.dart';
 
-class PopularList extends StatelessWidget {
-  final GroundController groundCtrl = Get.find();
+class PopularList extends StatefulWidget {
+  const PopularList({super.key});
 
-  PopularList({super.key});
+  @override
+  State<PopularList> createState() => _PopularListState();
+}
+
+class _PopularListState extends State<PopularList> {
+  late final GroundController groundCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    groundCtrl = Get.find<GroundController>();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final items = groundCtrl.filteredGrounds;
+      final isLoading = groundCtrl.isPopularLoading.value;
 
       return Column(
         children: [
@@ -24,10 +40,8 @@ class PopularList extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Most Popular',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-                ),
+                Text('Most Popular',
+                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
                 TextButton(
                   onPressed: () => Get.to(UserClubScreen()),
                   child: const Text('See All', style: TextStyle(color: Color(0xFF072A40))),
@@ -39,32 +53,34 @@ class PopularList extends StatelessWidget {
             padding: const EdgeInsets.all(5.0),
             child: SizedBox(
               height: 260.h,
-              child: items.isEmpty
+              child: isLoading && items.isEmpty
+                  ? const _SkeletonList()
+                  : (items.isEmpty
                   ? Center(
                 child: Text(
                   'No recommended playgrounds found',
                   style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                 ),
               )
-                  : ListView.builder(
+                  : ListView.separated(
                 scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: 8.w), // edge padding
                 itemCount: items.length,
+                separatorBuilder: (_, __) => SizedBox(width: 12.w), // GAP 👈
                 itemBuilder: (context, idx) {
                   final g = items[idx];
-                  final cover = g.coverUrl; // normalized cover URL
+                  final cover = g.coverUrl;
                   final hasPrice = (g.price ?? 0) > 0;
-                  final hasRating = (g.rating != null) && (g.rating > 0);
+                  final hasRating = (g.rating != null) && (g.rating! > 0);
 
-                  // DEBUG
                   if (kDebugMode) {
                     debugPrint('🖼️ [PopularList][$idx] ${g.title} coverUrl => ${cover ?? "(null)"}');
                   }
 
                   return GestureDetector(
                     onTap: () => _showGroundSheet(context, g),
-                    child: Container(
+                    child: SizedBox(
                       width: 145.w,
-                      margin: EdgeInsets.only(right: 12.w),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -77,9 +93,8 @@ class PopularList extends StatelessWidget {
                                 imageUrl: cover,
                                 fit: BoxFit.cover,
                                 width: double.infinity,
-                                placeholder: (context, url) => const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
+                                placeholder: (context, url) =>
+                                const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                                 errorWidget: (context, url, error) {
                                   if (kDebugMode) {
                                     debugPrint('⚠️ Image load failed for ${g.title} -> $url | error: $error');
@@ -122,22 +137,16 @@ class PopularList extends StatelessWidget {
                             children: [
                               if (hasPrice)
                                 Text(
-                                  '${g.price} PKR/night',
+                                  '${g.price} PKR/hour',
                                   style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
                                 ),
-
-                              // small spacer only if both exist
                               if (hasPrice && hasRating) SizedBox(width: 6.w),
-
                               if (hasRating)
                                 Row(
                                   children: [
                                     Icon(Icons.star, color: Colors.orange, size: 12.sp),
                                     SizedBox(width: 2.w),
-                                    Text(
-                                      g.rating.toString(),
-                                      style: TextStyle(fontSize: 12.sp),
-                                    ),
+                                    Text('${g.rating}', style: TextStyle(fontSize: 12.sp)),
                                   ],
                                 ),
                             ],
@@ -147,7 +156,7 @@ class PopularList extends StatelessWidget {
                     ),
                   );
                 },
-              ),
+              )),
             ),
           ),
         ],
@@ -158,7 +167,7 @@ class PopularList extends StatelessWidget {
   void _showGroundSheet(BuildContext context, dynamic g) {
     final cover = g.coverUrl as String?;
     final hasPrice = (g.price ?? 0) > 0;
-    final hasRating = (g.rating != null) && (g.rating > 0);
+    final hasRating = (g.rating != null) && (g.rating! > 0);
 
     showModalBottomSheet(
       context: context,
@@ -229,29 +238,16 @@ class PopularList extends StatelessWidget {
                   // Tags row: price / rating
                   Row(
                     children: [
-                      if (hasPrice)
-                        _chip(
-                          icon: Icons.attach_money,
-                          label: '${g.price} PKR / hour',
-                        ),
+                      if (hasPrice) _chip(icon: Icons.attach_money, label: '${g.price} PKR / hour'),
                       if (hasPrice && hasRating) SizedBox(width: 8.w),
-                      if (hasRating)
-                        _chip(
-                          icon: Icons.star,
-                          iconColor: Colors.orange,
-                          label: g.rating.toString(),
-                        ),
+                      if (hasRating) _chip(icon: Icons.star, iconColor: Colors.orange, label: '${g.rating}'),
                     ],
                   ),
 
                   SizedBox(height: 16.h),
 
-                  // Quick Info (you can map your ground model fields accordingly)
-                  if (g.description != null && (g.description as String).isNotEmpty) ...[
-                    Text(
-                      'About',
-                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-                    ),
+                  if ((g.description ?? '').toString().isNotEmpty) ...[
+                    Text('About', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
                     SizedBox(height: 6.h),
                     Text(
                       g.description,
@@ -265,25 +261,23 @@ class PopularList extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            // e.g., navigate to All Clubs or open map if you store coordinates
-                            Get.to(UserClubScreen());
-                          },
+                          onPressed: () => Get.to(UserClubScreen()),
                           style: OutlinedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 12.h),
                             side: const BorderSide(color: Color(0xFF072A40)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                           ),
                           icon: const Icon(Icons.map_outlined),
-                          label: const Text('Explore clubs'),
+                          label: const Text('Explore clubs'
+                          ),
                         ),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.of(context).pop();
-                            Get.to(() => BookingScreen());
+
+
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF072A40),
@@ -291,7 +285,7 @@ class PopularList extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                           ),
                           icon: const Icon(Icons.calendar_month),
-                          label: const Text('Book Now'),
+                          label: const Text('',style: TextStyle(color: Colors.white),),
                         ),
                       ),
                     ],
@@ -321,6 +315,61 @@ class PopularList extends StatelessWidget {
           Text(
             label,
             style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFF072A40)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkeletonList extends StatelessWidget {
+  const _SkeletonList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 8.w), // edge padding
+      itemCount: 6,
+      separatorBuilder: (_, __) => SizedBox(width: 12.w), // GAP 👈
+      itemBuilder: (_, __) => const _SkeletonCard(),
+    );
+  }
+}
+
+class _SkeletonCard extends StatelessWidget {
+  const _SkeletonCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 145.w,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // image box
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          // title line
+          Container(height: 12.h, width: 120.w, color: Colors.grey.shade200),
+          SizedBox(height: 6.h),
+          // subtitle line
+          Container(height: 10.h, width: 90.w, color: Colors.grey.shade200),
+          SizedBox(height: 6.h),
+          // price/rating line
+          Row(
+            children: [
+              Container(height: 10.h, width: 70.w, color: Colors.grey.shade200),
+              SizedBox(width: 6.w),
+              Container(height: 10.h, width: 40.w, color: Colors.grey.shade200),
+            ],
           ),
         ],
       ),

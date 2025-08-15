@@ -1,8 +1,11 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/controllers/auth%20controllers/m_pin_login_controller.dart';
 import 'package:padel_pro/controllers/auth%20controllers/otp_controller.dart';
 import 'package:padel_pro/controllers/auth%20controllers/vendor_signup_controller.dart';
+import 'package:padel_pro/screens/admin/further_screens/add_vendor_by_admin_controller.dart';
 import 'package:padel_pro/screens/vendor/tournament/create_tournment_controller.dart';
+import 'package:padel_pro/services/admin%20api/add_vendor_by_admin.dart';
 import 'package:padel_pro/services/verify_otp_api.dart';
 import '../controllers/auth controllers/auth_rolebase_controller.dart';
 import '../controllers/auth controllers/user_signup_controller.dart';
@@ -19,6 +22,8 @@ import '../screens/profile_screen/controller/profile_controller.dart';
 class AppBindings implements Bindings {
   @override
   void dependencies() {
+    final storage = const FlutterSecureStorage();
+
     Get.lazyPut(() => DashboardController(), fenix: true);
     Get.lazyPut(() => MainController(), fenix: true);
     Get.lazyPut(() => SportController(), fenix: true);
@@ -27,16 +32,27 @@ class AppBindings implements Bindings {
     Get.lazyPut(() => ProductController(), fenix: true);
     Get.lazyPut(() => ProfileController(), fenix: true);
     Get.lazyPut(() => VendorSignUpController(), fenix: true);
-    Get.lazyPut(() =>  UserSignUpController(), fenix: true);
-    Get.lazyPut(() =>  OnboardingController(), fenix: true);
-    Get.lazyPut(() =>   OtpController(), fenix: true);
+    Get.lazyPut(() => UserSignUpController(), fenix: true);
+    Get.lazyPut(() => OnboardingController(), fenix: true);
+    Get.lazyPut(() => OtpController(), fenix: true);
     Get.lazyPut(() => AuthController(), fenix: true);
+    Get.lazyPut<VendorCreateApi>(
+          () => VendorCreateApi(),
+      fenix: true,
+    );
+
     Get.lazyPut(() => AuthOtpService(), fenix: true);
+    Get.lazyPut(
+      () => AddVendorByAdminController(
+        service: Get.find<VendorCreateApi>(),
+        tokenProvider: () => storage.read(key: 'admin_token'),
+      ),
+      fenix: true,
+    );
 
     // Get.lazyPut(() => DashboardController(), fenix: true);
     Get.lazyPut(() => CreateTournamentController(), fenix: true);
     Get.lazyPut(() => MPINLoginController(), fenix: true);
     // Get.lazyPut(() => ClubController(), fenix: true);
-
   }
 }
