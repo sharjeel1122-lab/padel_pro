@@ -223,6 +223,20 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                         // final club = controller.clubs[index];
                         final club = controller.filteredClubs[index];
 
+                        // Resolve image URLs from multiple potential keys
+                        final List<String> images = <String>[];
+                        for (final key in ['photos', 'images', 'gallery']) {
+                          final val = club[key];
+                          if (val is List) {
+                            for (final item in val) {
+                              final u = item?.toString() ?? '';
+                              if (u.isNotEmpty) images.add(u);
+                            }
+                          } else if (val is String) {
+                            if (val.isNotEmpty) images.add(val);
+                          }
+                        }
+
                         return ClubCard(
                           name: club['name'],
                           location: club['location'],
@@ -230,6 +244,7 @@ class _VendorDashboardScreenState extends State<VendorDashboardScreen> {
                           onView: () => controller.viewCourts(index,club['courts'] as List<dynamic>),
                           onEdit: () => controller.editClub(index),
                           onDelete: () => controller.deleteClub(index),
+                          imageUrls: images.toSet().toList(),
                         );
                       },
                     );

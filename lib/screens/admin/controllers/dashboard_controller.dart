@@ -20,6 +20,7 @@ class DashboardController extends GetxController {
   var vendors = 0.obs;     // vendors
   var products = 0.obs;    // clubs
   var requests = 0.obs;    // pending
+  var isLoading = false.obs; // loading state
   Timer? refreshTimer;
 
   // === Config ===
@@ -64,15 +65,46 @@ class DashboardController extends GetxController {
   // -------------------------------------------------------
 
   void startAutoRefresh() {
-    // silent refresh every 5 seconds
+    // Silent refresh every 5 seconds (no loading indicator)
     refreshTimer?.cancel();
-    refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) => loadStats());
+    refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      // Silent refresh without loading indicator
+      _silentLoadStats();
+    });
   }
 
   // Load dashboard stats
   Future<void> loadStats() async {
     try {
+      isLoading.value = true;
       // Fetch in parallel for speed
+      final results = await Future.wait<int>([
+        _fetchTotalUsersCount(),                 // users
+        _fetchTotalVendorsCount(),               // vendors
+        _fetchTotalClubsCountUsingService(),     // clubs (instance API)
+        _fetchPendingRequestsCountUsingService() // pending (your AdminRequestApi)
+      ]);
+
+      totalCourts.value = results[0];
+      vendors.value     = results[1];
+      products.value    = results[2];
+      requests.value    = results[3];
+    } catch (_) {
+      // Keep last known values; no UI spam
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Manual refresh method (shows loading indicator)
+  Future<void> refreshStats() async {
+    await loadStats();
+  }
+
+  // Silent refresh method (no loading indicator)
+  Future<void> _silentLoadStats() async {
+    try {
+      // Fetch in parallel for speed without setting loading state
       final results = await Future.wait<int>([
         _fetchTotalUsersCount(),                 // users
         _fetchTotalVendorsCount(),               // vendors

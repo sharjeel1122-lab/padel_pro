@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:padel_pro/screens/vendor/tournament/create_tournment_controller.dart';
@@ -414,8 +415,9 @@ class CreateTournamentScreen extends StatelessWidget {
       firstDate: tomorrow,                // <-- disallow today
       lastDate: DateTime(2101),
       builder: (context, child) {
+        final base = Theme.of(context);
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: base.copyWith(
             colorScheme: ColorScheme.dark(
               primary: accentColor,
               onPrimary: Colors.white,
@@ -423,9 +425,28 @@ class CreateTournamentScreen extends StatelessWidget {
               onSurface: Colors.white,
             ),
             dialogBackgroundColor: primaryColor,
-            textTheme: TextTheme(
+            textTheme: base.textTheme.copyWith(
               bodyMedium: const TextStyle(color: Colors.white),
-              titleMedium: TextStyle(color: Colors.white.withOpacity(0.8)),
+              titleMedium: TextStyle(color: Colors.white.withOpacity(0.85)),
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: primaryColor,
+              headerBackgroundColor: cardColor,
+              headerForegroundColor: Colors.white,
+              dividerColor: Colors.white12,
+              dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.selected)) return Colors.white;
+                if (states.contains(MaterialState.disabled)) return Colors.white30;
+                return Colors.white70;
+              }),
+              dayOverlayColor: MaterialStateProperty.all(Colors.white10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
           ),
           child: child!,
@@ -438,26 +459,126 @@ class CreateTournamentScreen extends StatelessWidget {
   }
 
   Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: accentColor,
-              onPrimary: Colors.white,
-              surface: cardColor,
-              onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: primaryColor,
-          ),
-          child: child!,
-        );
-      },
-    );
+    final TimeOfDay? picked = await _showCustomTimePicker(context,
+        initialTime: controller.startTime.value);
     if (picked != null) {
       controller.startTime.value = picked;
     }
+  }
+
+  Future<TimeOfDay?> _showCustomTimePicker(BuildContext context,
+      {TimeOfDay? initialTime}) async {
+    final List<int> hours = List<int>.generate(24, (i) => i);
+    const List<int> quarterMinutes = [0, 15, 30, 45];
+
+    int nearestQuarter(int m) {
+      int best = 0;
+      int bestDiff = 60;
+      for (final q in quarterMinutes) {
+        final d = (m - q).abs();
+        if (d < bestDiff) {
+          best = q;
+          bestDiff = d;
+        }
+      }
+      return best;
+    }
+
+    final now = TimeOfDay.now();
+    int selectedHour = (initialTime?.hour ?? now.hour).clamp(0, 23);
+    int selectedMinute = nearestQuarter(initialTime?.minute ?? now.minute);
+
+    final hourCtrl = FixedExtentScrollController(
+      initialItem: selectedHour,
+    );
+    final minCtrl = FixedExtentScrollController(
+      initialItem: quarterMinutes.indexOf(selectedMinute),
+    );
+
+    return showDialog<TimeOfDay>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              backgroundColor: primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: const Text(
+                'Select Time',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: SizedBox(
+                height: 220,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: hourCtrl,
+                        itemExtent: 36,
+                        magnification: 1.1,
+                        useMagnifier: true,
+                        backgroundColor: primaryColor,
+                        onSelectedItemChanged: (i) => setState(() {
+                          selectedHour = hours[i];
+                        }),
+                        selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                          background: Colors.white.withOpacity(0.08),
+                        ),
+                        children: hours
+                            .map((h) => Center(
+                                  child: Text(
+                                    h.toString().padLeft(2, '0'),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: minCtrl,
+                        itemExtent: 36,
+                        magnification: 1.1,
+                        useMagnifier: true,
+                        backgroundColor: primaryColor,
+                        onSelectedItemChanged: (i) => setState(() {
+                          selectedMinute = quarterMinutes[i];
+                        }),
+                        selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                          background: Colors.white.withOpacity(0.08),
+                        ),
+                        children: quarterMinutes
+                            .map((m) => Center(
+                                  child: Text(
+                                    m.toString().padLeft(2, '0'),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(
+                    TimeOfDay(hour: selectedHour, minute: selectedMinute),
+                  ),
+                  child: Text('OK', style: TextStyle(color: accentColor, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

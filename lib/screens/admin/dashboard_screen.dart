@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/screens/admin/controllers/dashboard_controller.dart';
+import 'package:padel_pro/screens/admin/custom_admin_widgets/pending_clubs.dart';
 
 import 'custom_admin_widgets/admin_top_bar.dart';
-import 'custom_admin_widgets/recent_venues_table.dart';
 import 'custom_admin_widgets/stats_grid.dart';
 
 
@@ -29,7 +29,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 StatsGrid(),
                 const SizedBox(height: 24),
-                RecentVenuesTable(),
+                PendingCourtsWidget(),
               ],
             ),
           ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -8,9 +9,7 @@ class FetchVendorApi {
 
   final _storage = const FlutterSecureStorage();
 
-
   Future<String?> _getToken() async => await _storage.read(key: 'token');
-
 
   Future<List<dynamic>> getVendorPlaygrounds() async {
     try {
@@ -46,9 +45,7 @@ class FetchVendorApi {
     }
   }
 
-
   //Delete Playground API
-
   Future<void> deletePlaygroundById(String id) async {
     final token = await _storage.read(key: 'token'); //
     final uri = Uri.parse('$_baseUrl/api/v1/playground/delete/$id');
@@ -67,53 +64,92 @@ class FetchVendorApi {
   }
 
 
-  //Update Playground
+
+  // Update Playground (Multipart approach like tournament update)
+
   Future<Map<String, dynamic>> updatePlaygroundById(
       String id,
-      Map<String, dynamic> payload,
-      ) async {
-    final token = await _storage.read(key: 'token');
-    if (token == null) throw Exception('Missing token');
-
-    final uri = Uri.parse('$_baseUrl/api/v1/playground/update/$id');
-    print(uri);
+      Map<String, dynamic> payload, {
+        List<File>? photoFiles, // new photos picked from device
+        List<String>? removePhotoUrls, // URLs to remove from gallery
+      }) async {
     try {
-      final res = await http.patch(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(payload),
-      );
+      final token = await _getToken();
+      if (token == null) {
+        throw Exception("❌ Token missing. Please log in again.");
+      }
 
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        return jsonDecode(res.body) as Map<String, dynamic>;
+      final url = Uri.parse('$_baseUrl/api/v1/playground/update/$id');
+      print("🔄 PATCH (multipart): $url");
+
+      final request = http.MultipartRequest("PATCH", url);
+
+      // Headers
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add text fields
+      payload.forEach((key, value) {
+        if (value == null) return;
+        if (key == "facilities" && value is List) {
+          // facilities must be JSON string
+          request.fields[key] = jsonEncode(value);
+        } else if (key == "photos" && value is List) {
+          // keep remaining photos
+          request.fields[key] = jsonEncode(value);
+        } else {
+          request.fields[key] = value.toString();
+        }
+      });
+
+      // If frontend supports removing photos
+      if (removePhotoUrls != null && removePhotoUrls.isNotEmpty) {
+        request.fields['removePhotoUrls'] = jsonEncode(removePhotoUrls);
+      }
+
+      // Attach new photo files
+      if (photoFiles != null && photoFiles.isNotEmpty) {
+        for (final file in photoFiles) {
+          request.files.add(await http.MultipartFile.fromPath("photos", file.path));
+        }
+      }
+
+      // Send request
+      final response = await request.send();
+      final resBody = await response.stream.bytesToString();
+      print("📩 Response: $resBody");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(resBody);
       } else {
-        dynamic errorBody;
-        try { errorBody = jsonDecode(res.body); } catch (_) { errorBody = res.body; }
-        final msg = (errorBody is Map && errorBody['message'] != null)
-            ? errorBody['message']
-            : 'HTTP ${res.statusCode}: ${res.reasonPhrase ?? 'Unknown error'}';
-        throw Exception('Update failed: $msg');
+        throw Exception(
+          '❌ Error ${response.statusCode}: ${response.reasonPhrase}\n$resBody',
+        );
       }
     } catch (e) {
+      print("🚨 updatePlaygroundById error: $e");
       rethrow;
     }
   }
+
+
+
+
+  //////END///////
+
+
+
+
 
 
   //Update Courts
-
   Future<Map<String, dynamic>> updateCourtById(
-      String id,
-      Map<String, dynamic> payload,
-      ) async {
-    final token = await _storage.read(key: 'token');
+    String id,
+    Map<String, dynamic> payload,
+  ) async {
+    final token = await _getToken();
     if (token == null) throw Exception('Missing token');
-
     final uri = Uri.parse('$_baseUrl/api/v1/playground/updateCourts/$id');
-    print(uri);
+    print('🔄 PATCH courts: $uri');
     try {
       final res = await http.patch(
         uri,
@@ -123,12 +159,15 @@ class FetchVendorApi {
         },
         body: jsonEncode(payload),
       );
-
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return jsonDecode(res.body) as Map<String, dynamic>;
       } else {
         dynamic errorBody;
-        try { errorBody = jsonDecode(res.body); } catch (_) { errorBody = res.body; }
+        try {
+          errorBody = jsonDecode(res.body);
+        } catch (_) {
+          errorBody = res.body;
+        }
         final msg = (errorBody is Map && errorBody['message'] != null)
             ? errorBody['message']
             : 'HTTP ${res.statusCode}: ${res.reasonPhrase ?? 'Unknown error'}';
@@ -138,11 +177,6 @@ class FetchVendorApi {
       rethrow;
     }
   }
-
-
-
-
-
 }
 
 

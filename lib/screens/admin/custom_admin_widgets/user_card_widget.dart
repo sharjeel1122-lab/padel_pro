@@ -12,59 +12,36 @@ class UserCardWidget extends StatelessWidget {
     required this.onDeleteConfirmed,
   });
 
-  void _showDeleteDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF0A3B5C),
-        title: const Text("Confirm Delete", style: TextStyle(color: Colors.white)),
-        content: const Text(
-          "Are you sure you want to delete this user?",
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onDeleteConfirmed();
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
       color: const Color(0xFF0A3B5C),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("${user.firstName} ${user.lastName}",
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(
+              "${user.firstName} ${user.lastName}",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
             const SizedBox(height: 6),
-            Text("Email: ${user.email}", style: const TextStyle(color: Colors.white70)),
-            Text("Phone: ${user.phone ?? '—'}", style: const TextStyle(color: Colors.white70)),
-            Text("City: ${user.city ?? '—'}", style: const TextStyle(color: Colors.white70)),
-            Text("Role: ${user.role}", style: const TextStyle(color: Colors.white70)),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // IconButton(
-                //   onPressed: () => _showDeleteDialog(context),
-                //   icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                // ),
-              ],
+            Text("Email: ${user.email}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+            Text("Phone: ${user.phone ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+            Text("City: ${user.city ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+            Text("Role: ${user.role}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                tooltip: 'Delete user',
+                onPressed: onDeleteConfirmed,
+                icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+              ),
             ),
           ],
         ),

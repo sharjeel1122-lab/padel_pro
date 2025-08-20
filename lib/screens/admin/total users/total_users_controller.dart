@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:padel_pro/model/users model/user_model.dart';
 import 'package:padel_pro/services/admin api/fetch_all_users_api.dart';
+import 'package:padel_pro/services/admin api/delete_user_api.dart';
 
 class TotalUsersController extends GetxController {
   final FetchAllUsersApi service = FetchAllUsersApi();
+  final DeleteUserApi deleteService = DeleteUserApi();
 
   // state
   final users = <UserModel>[].obs;
@@ -20,7 +22,8 @@ class TotalUsersController extends GetxController {
       final email = u.email.toLowerCase();
       final phone = u.phone?.toLowerCase() ?? '';
       return fullName.contains(q) || email.contains(q) || phone.contains(q);
-    }).toList();
+    }).toList()
+      ..sort((a, b) => a.firstName.compareTo(b.firstName));
   }
 
   @override
@@ -31,7 +34,7 @@ class TotalUsersController extends GetxController {
 
   void search(String query) => searchQuery.value = query;
 
-  /// Ensures the loader stays for at least 10 seconds.
+  /// Ensures the loader stays for at least 5 seconds.
   Future<void> _loadWithMinimumDelay() async {
     isLoading.value = true;
     final start = DateTime.now();
@@ -53,22 +56,17 @@ class TotalUsersController extends GetxController {
       final result = await service.fetchUsers();
       users.assignAll(result.where((u) => u.role == 'user'));
     } catch (e) {
-      // error UI optional; remove if you want it fully silent
+      // error UI optional
       Get.snackbar("Error", e.toString());
     }
   }
 
-// Future<void> deleteUser(int index) async {
-//   final userId = filteredUsers[index].id;
-//   final removedUser = filteredUsers[index];
-//   users.remove(removedUser);
-//
-//   final success = await service.deleteUser(userId);
-//   if (!success) {
-//     Get.snackbar("Error", "Failed to delete user");
-//     users.add(removedUser);
-//   } else {
-//     Get.snackbar("Deleted", "User deleted successfully");
-//   }
-// }
+  Future<bool> deleteUserById(String userId) async {
+    try {
+      return await deleteService.deleteUserById(userId);
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+      return false;
+    }
+  }
 }

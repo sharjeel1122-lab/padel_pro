@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -86,6 +87,92 @@ class BookingSheet extends StatelessWidget {
     return selected.isBefore(now);
   }
 
+  Future<TimeOfDay?> _showCustomTimePicker(
+      BuildContext context, {
+        TimeOfDay? initialTime,
+      }) async {
+    final List<int> hours = List<int>.generate(24, (i) => i);
+    const List<int> quarterMinutes = <int>[0, 15, 30, 45];
+
+    final TimeOfDay base = initialTime ?? const TimeOfDay(hour: 10, minute: 0);
+    int selectedHour = base.hour.clamp(0, 23);
+    int selectedMinuteIndex = quarterMinutes.indexWhere(
+          (m) => m == (base.minute ~/ 15) * 15,
+    );
+    if (selectedMinuteIndex == -1) selectedMinuteIndex = 0;
+
+    return showDialog<TimeOfDay>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+          contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Container(
+            color: Colors.white,
+            child: SizedBox(
+              height: 220,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CupertinoPicker(
+                      scrollController: FixedExtentScrollController(initialItem: selectedHour),
+                      itemExtent: 32,
+                      onSelectedItemChanged: (i) {
+                        selectedHour = hours[i];
+                      },
+                      children: hours
+                          .map((h) => Center(
+                        child: Text(
+                          h.toString().padLeft(2, '0'),
+                          style: const TextStyle(fontSize: 18, color: Colors.black),
+                        ),
+                      ))
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: CupertinoPicker(
+                      scrollController: FixedExtentScrollController(initialItem: selectedMinuteIndex),
+                      itemExtent: 32,
+                      onSelectedItemChanged: (i) {
+                        selectedMinuteIndex = i;
+                      },
+                      children: quarterMinutes
+                          .map((m) => Center(
+                        child: Text(
+                          m.toString().padLeft(2, '0'),
+                          style: const TextStyle(fontSize: 18, color: Colors.black),
+                        ),
+                      ))
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
+            ),
+            TextButton(
+              onPressed: () {
+                final int minute = quarterMinutes[selectedMinuteIndex];
+                Navigator.of(ctx).pop(TimeOfDay(hour: selectedHour, minute: minute));
+              },
+              child: const Text('OK', style: TextStyle(color: Color(0xFF0C1E2C), fontWeight: FontWeight.w600)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _pickDate(
       BuildContext context,
       BookingController ctrl,
@@ -152,47 +239,7 @@ class BookingSheet extends StatelessWidget {
       BookedSlotsController bCtrl,
       ) async {
     final init = ctrl.selectedTime.value ?? const TimeOfDay(hour: 10, minute: 0);
-
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: init,
-      // ✅ open on dial (avoids input-mode oddities)
-      initialEntryMode: TimePickerEntryMode.dial,
-      // ✅ use root navigator so dialog isn't nested under the sheet
-      useRootNavigator: true,
-      builder: (context, child) {
-        // ✅ Force 24h format
-        final mq = MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true);
-        return MediaQuery(
-          data: mq,
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: const ColorScheme.light(
-                primary: Color(0xFF0C1E2C),
-                onPrimary: Colors.white,
-                surface: Colors.white,
-                onSurface: Colors.black,
-              ),
-              timePickerTheme: const TimePickerThemeData(
-                hourMinuteTextColor: Colors.black,
-                dayPeriodTextColor: Colors.black,
-                dialHandColor: Color(0xFF0C1E2C),
-                dialTextColor: Colors.black,
-                helpTextStyle: TextStyle(color: Colors.black),
-                hourMinuteColor: Colors.white,
-                hourMinuteTextStyle: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 24,
-                ),
-                entryModeIconColor: Color(0xFF0C1E2C),
-              ),
-            ),
-            child: child!,
-          ),
-        );
-      },
-    );
+    final picked = await _showCustomTimePicker(context, initialTime: init);
 
     if (picked != null) {
       final date = ctrl.selectedDate.value ?? DateTime.now();

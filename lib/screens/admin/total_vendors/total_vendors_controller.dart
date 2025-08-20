@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:padel_pro/model/vendors model/vendors_model.dart';
 import 'package:padel_pro/services/admin api/fetch_all_vendors.dart';
+import 'package:padel_pro/services/admin api/delete_vendor_api.dart';
 
 class TotalVendorsController extends GetxController {
   final FetchAllVendorsApi service = FetchAllVendorsApi();
+  final DeleteVendorApi deleteService = DeleteVendorApi();
 
   final vendors = <VendorsModel>[].obs;
   final searchQuery = ''.obs;
@@ -47,7 +49,6 @@ class TotalVendorsController extends GetxController {
     isLoading.value = false;
   }
 
-  /// Fetch vendors. If [silent] is true, avoid noisy snackbars (for initial splash).
   Future<void> fetchAllVendors({bool silent = false}) async {
     try {
       final result = await service.fetchVendors(); // returns List<VendorsModel>
@@ -59,26 +60,12 @@ class TotalVendorsController extends GetxController {
     }
   }
 
-// // If your UI uses delete:
-// Future<void> deleteVendor(int index) async {
-//   final item = filteredVendors[index];
-//   final i = vendors.indexWhere((v) => v.id == item.id);
-//   if (i == -1) return;
-//
-//   final backup = vendors[i];
-//   vendors.removeAt(i); // optimistic
-//
-//   try {
-//     final ok = await service.deleteVendor(item.id);
-//     if (!ok) {
-//       vendors.insert(i, backup);
-//       Get.snackbar("Delete failed", "Could not delete vendor");
-//     } else {
-//       Get.snackbar("Deleted", "Vendor removed successfully");
-//     }
-//   } catch (e) {
-//     vendors.insert(i, backup);
-//     Get.snackbar("Error", e.toString());
-//   }
-// }
+  Future<bool> deleteVendorById(String vendorId) async {
+    try {
+      return await deleteService.deleteVendorById(vendorId);
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+      return false;
+    }
+  }
 }

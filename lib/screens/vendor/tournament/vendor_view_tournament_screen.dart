@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -204,13 +205,29 @@ class _VendorTournamentsScreenState extends State<VendorTournamentsScreen> {
     if (safe.isEmpty) {
       return Image.asset(fallbackAsset, fit: fit);
     }
-    return FadeInImage(
-      placeholder: AssetImage(fallbackAsset),
-      image: NetworkImage(safe),
+    return Image.network(
+      safe,
       fit: fit,
-      imageErrorBuilder: (_, __, ___) => Image.asset(fallbackAsset, fit: fit),
-      placeholderErrorBuilder: (_, __, ___) =>
-          Container(color: Colors.white.withOpacity(0.05)),
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Stack(
+          fit: StackFit.expand,
+          children: const [
+            ColoredBox(color: Color(0x22000000)),
+            Center(
+              child: SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      errorBuilder: (_, __, ___) => Image.asset(fallbackAsset, fit: fit),
     );
   }
 
@@ -634,39 +651,140 @@ class _VendorTournamentsScreenState extends State<VendorTournamentsScreen> {
               initialDate: initial!,
               firstDate: DateTime.now().add(const Duration(days: 1)),
               lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
-              builder: (c, child) => Theme(
-                data: Theme.of(c).copyWith(
-                  colorScheme: ColorScheme.dark(
-                      primary: accentColor, surface: cardColor, onSurface: Colors.white),
-                  dialogBackgroundColor: cardColor,
-                ),
-                child: child!,
-              ),
+              builder: (c, child) {
+                final base = Theme.of(c);
+                return Theme(
+                  data: base.copyWith(
+                    colorScheme: ColorScheme.dark(
+                      primary: accentColor,
+                      surface: cardColor,
+                      onSurface: Colors.white,
+                      onPrimary: Colors.white,
+                    ),
+                    dialogBackgroundColor: cardColor,
+                    datePickerTheme: DatePickerThemeData(
+                      backgroundColor: cardColor,
+                      headerBackgroundColor: surfaceColor,
+                      headerForegroundColor: Colors.white,
+                      dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                        if (states.contains(MaterialState.selected)) return Colors.white;
+                        if (states.contains(MaterialState.disabled)) return Colors.white30;
+                        return Colors.white70;
+                      }),
+                      dayOverlayColor: MaterialStateProperty.all(Colors.white10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    textButtonTheme: TextButtonThemeData(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
             );
             if (d != null) {
-              startDateC.text = d.toIso8601String().substring(0, 10); // YYYY-MM-DD
+              startDateC.text = DateFormat('MMMM dd, yyyy').format(d);
               setState(() {});
             }
           }
 
           Future<void> pickTime() async {
-            final now = TimeOfDay.now();
-            final tOfDay = await showTimePicker(
+            TimeOfDay? initial;
+            // Try parse existing
+            final txt = startTimeC.text.trim();
+            if (txt.isNotEmpty) {
+              final parts = txt.split(':');
+              if (parts.length >= 2) {
+                final hh = int.tryParse(parts[0]) ?? TimeOfDay.now().hour;
+                final mm = int.tryParse(parts[1]) ?? TimeOfDay.now().minute;
+                initial = TimeOfDay(hour: hh.clamp(0, 23), minute: mm.clamp(0, 59));
+              }
+            }
+
+            final picked = await showDialog<TimeOfDay>(
               context: ctx,
-              initialTime: TimeOfDay(hour: now.hour, minute: now.minute),
-              builder: (c, child) => Theme(
-                data: Theme.of(c).copyWith(
-                  colorScheme: ColorScheme.dark(
-                      primary: accentColor, surface: cardColor, onSurface: Colors.white),
-                  dialogBackgroundColor: cardColor,
-                ),
-                child: child!,
-              ),
+              builder: (dCtx) {
+                final hours = List<int>.generate(24, (i) => i);
+                const minutes = <int>[0, 15, 30, 45];
+
+                int nearestQuarter(int m) {
+                  int best = 0, bestDiff = 60;
+                  for (final q in minutes) {
+                    final diff = (m - q).abs();
+                    if (diff < bestDiff) { best = q; bestDiff = diff; }
+                  }
+                  return best;
+                }
+
+                final now = TimeOfDay.now();
+                int selHour = (initial?.hour ?? now.hour).clamp(0, 23);
+                int selMinute = nearestQuarter(initial?.minute ?? now.minute);
+
+                final hourCtrl = FixedExtentScrollController(initialItem: selHour);
+                final minCtrl = FixedExtentScrollController(initialItem: minutes.indexOf(selMinute));
+
+                return AlertDialog(
+                  backgroundColor: cardColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: const Text('Select Time', style: TextStyle(color: Colors.white)),
+                  content: SizedBox(
+                    height: 220,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: CupertinoPicker(
+                            scrollController: hourCtrl,
+                            itemExtent: 36,
+                            magnification: 1.1,
+                            useMagnifier: true,
+                            backgroundColor: cardColor,
+                            selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                              background: Colors.white.withOpacity(0.08),
+                            ),
+                            onSelectedItemChanged: (i) { selHour = hours[i]; },
+                            children: hours.map((h) => Center(
+                              child: Text(h.toString().padLeft(2, '0'), style: const TextStyle(color: Colors.white)),
+                            )).toList(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: CupertinoPicker(
+                            scrollController: minCtrl,
+                            itemExtent: 36,
+                            magnification: 1.1,
+                            useMagnifier: true,
+                            backgroundColor: cardColor,
+                            selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                              background: Colors.white.withOpacity(0.08),
+                            ),
+                            onSelectedItemChanged: (i) { selMinute = minutes[i]; },
+                            children: minutes.map((m) => Center(
+                              child: Text(m.toString().padLeft(2, '0'), style: const TextStyle(color: Colors.white)),
+                            )).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.of(dCtx).pop(), child: const Text('Cancel', style: TextStyle(color: Colors.white70))),
+                    TextButton(
+                      onPressed: () => Navigator.of(dCtx).pop(TimeOfDay(hour: selHour, minute: selMinute)),
+                      child: Text('OK', style: TextStyle(color: accentColor, fontWeight: FontWeight.w600)),
+                    ),
+                  ],
+                );
+              },
             );
-            if (tOfDay != null) {
-              final hh = tOfDay.hour.toString().padLeft(2, '0');
-              final mm = tOfDay.minute.toString().padLeft(2, '0');
-              startTimeC.text = "$hh:$mm"; // 24h as backend expects
+
+            if (picked != null) {
+              final hh = picked.hour.toString().padLeft(2, '0');
+              final mm = picked.minute.toString().padLeft(2, '0');
+              startTimeC.text = '$hh:$mm';
               setState(() {});
             }
           }
@@ -678,7 +796,7 @@ class _VendorTournamentsScreenState extends State<VendorTournamentsScreen> {
             final registrationLink = _changed('registrationLink', regLinkC.text);
             final tournamentType = _changed('tournamentType', typeC.text);
             final location = _changed('location', locationC.text);
-            final startDate = _changed('startDate', startDateC.text);
+            String? startDate = _changed('startDate', startDateC.text);
             final startTime = _changed('startTime', startTimeC.text);
             final description = _changed('description', descC.text);
 
@@ -690,6 +808,42 @@ class _VendorTournamentsScreenState extends State<VendorTournamentsScreen> {
               Get.snackbar('No changes', 'You have not modified any field.');
               return;
             }
+
+            // Convert formatted date to API format (YYYY-MM-DD) if needed
+            // Convert formatted date to API format (YYYY-MM-DD) if needed
+            if (startDate != null && startDate.isNotEmpty) {
+              String normalized = startDate.trim();
+              DateTime? parsed;
+
+              // Try ISO first (handles YYYY-MM-DD and even malformed like 2025-0815T...)
+              try {
+                parsed = DateTime.parse(_fixIsoDateString(normalized));
+              } catch (_) {
+                parsed = null;
+              }
+
+              // Try common human-friendly formats
+              if (parsed == null) {
+                final patterns = <String>[
+                  'MMMM dd, yyyy', // August 18, 2025
+                  'MMM d, yyyy',   // Aug 18, 2025
+                  'dd/MM/yyyy',    // 18/08/2025
+                  'd/M/yyyy',      // 8/8/2025
+                  'yyyy-MM-dd',    // 2025-08-18
+                ];
+                for (final p in patterns) {
+                  try {
+                    parsed = DateFormat(p).parseStrict(normalized);
+                    break;
+                  } catch (_) {/* keep trying */}
+                }
+              }
+
+              if (parsed != null) {
+                startDate = DateFormat('yyyy-MM-dd').format(parsed);
+              }
+            }
+
 
             try {
               setState(() => saving = true);

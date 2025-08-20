@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:padel_pro/services/vendors%20api/create_tournament_api.dart';
 import 'package:padel_pro/services/vendors%20api/delete_vendor_tournament_api.dart';
+import 'package:padel_pro/screens/vendor/tournament/vendor_view_tournament_screen.dart';
 
 
 class CreateTournamentController extends GetxController {
@@ -71,6 +72,36 @@ class CreateTournamentController extends GetxController {
         description: description.value,
         photo: coverPhoto.value,
       );
+
+      // Success: reset form and show themed dialog, then navigate
+      _resetForm();
+      Get.dialog(
+        AlertDialog(
+          backgroundColor: const Color(0xFF0C1E2C),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: const [
+              Icon(Icons.check_circle, color: Colors.greenAccent),
+              SizedBox(width: 8),
+              Text('Success', style: TextStyle(color: Colors.white)),
+            ],
+          ),
+          content: const Text(
+            'Tournament created successfully.',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Get.back();
+                Get.off(() => const VendorTournamentsScreen());
+              },
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+        barrierDismissible: false,
+      );
     } catch (e) {
       print('❌ Tournament create error: $e');
       Get.snackbar('Error', 'Failed to create tournament',
@@ -78,6 +109,17 @@ class CreateTournamentController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _resetForm() {
+    tournamentName.value = '';
+    description.value = '';
+    registrationLink.value = '';
+    location.value = '';
+    startDate.value = null;
+    startTime.value = null;
+    coverPhoto.value = null;
+    tournamentType.value = 'Mens';
   }
 
   //DELETE

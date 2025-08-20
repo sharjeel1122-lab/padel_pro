@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:padel_pro/model/vendors%20model/vendors_model.dart';
+import 'package:padel_pro/model/vendors model/vendors_model.dart';
 import 'package:padel_pro/screens/admin/total_vendors/edit_vendor_screen.dart';
 // ❌ Remove this old type to avoid mismatch
 // import '../../../model/vendor_model.dart';
@@ -51,53 +51,51 @@ class VendorCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final fullName = "${vendor.firstName} ${vendor.lastName}".trim();
 
-    return Card(
-      color: const Color(0xFF0A3B5C),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Name + verified
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    fullName.isEmpty ? '—' : fullName,
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      color: Colors.white,
+    return SizedBox(
+      child: Card(
+        color: const Color(0xFF0A3B5C),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(11),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Name + verified
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      fullName.isEmpty ? '—' : fullName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
+                  if (vendor.isEmailVerified)
+                    const Icon(Icons.verified, color: Colors.green, size: 18),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text("Email: ${vendor.email}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+              Text("Phone: ${vendor.phone ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+              Text("City: ${vendor.city ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+              Text("NTN: ${vendor.ntn ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  tooltip: 'Delete vendor',
+                  onPressed: onDeleteConfirmed,
+                  icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
                 ),
-                if (vendor.isEmailVerified)
-                  const Icon(Icons.verified, color: Colors.green, size: 18),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text("Email: ${vendor.email}", style: const TextStyle(color: Colors.white70)),
-            Text("Phone: ${vendor.phone ?? '—'}", style: const TextStyle(color: Colors.white70)),
-            Text("City: ${vendor.city ?? '—'}", style: const TextStyle(color: Colors.white70)),
-            Text("NTN: ${vendor.ntn ?? '—'}", style: const TextStyle(color: Colors.white70)),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // IconButton(
-                //   onPressed: onEdit,
-                //   // If your EditVendorScreen expects VendorsModel, you can do:
-                //   // onPressed: () => Get.to(() => EditVendorScreen(vendor: vendor, index: index)),
-                //   icon: const Icon(Icons.edit, color: Colors.orangeAccent, size: 20),
-                // ),
-                // IconButton(
-                //   onPressed: () => _showDeleteDialog(context),
-                //   icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                // ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
