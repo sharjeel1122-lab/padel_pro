@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:padel_pro/services/admin%20api/update_recommended_api.dart';
 
@@ -33,9 +34,15 @@ class RecommendedStatusController extends GetxController {
       if (result.isOk) {
         onLocalSuccess?.call();
         final msg = recommended ? 'Marked as recommended' : 'Removed from recommended';
-        Get.snackbar('Success', msg);
+        Get.snackbar(
+          backgroundColor: Color(0xFF072A40),
+            colorText: Colors.white,
+            'Success', msg);
       } else {
-        Get.snackbar('Error', result.message ?? 'Failed to update status');
+        Get.snackbar(
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+            'Error', result.message ?? 'Failed to update status');
       }
     } catch (e) {
       Get.snackbar('Error', e.toString());

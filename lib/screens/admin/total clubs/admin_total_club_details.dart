@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:confetti/confetti.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:padel_pro/screens/user/views/booking_sheet.dart';
 import 'package:padel_pro/screens/user/user_controller/user_allclub_screen_controller.dart';
+
+// Admin theme colors
+const Color kPrimary = Color(0xFF0A3B5C);
+const Color kBg = Color(0xFF072A40);
+const Color kCardBg = Color(0xFF0A3B5C);
+const Color kAccent = Color(0xFF1E88E5);
 
 class AdminClubDetailScreen extends StatefulWidget {
   final Map<String, dynamic> playground;
@@ -161,7 +168,7 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
     final headers = _resolveHeaders();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: kBg,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
@@ -169,7 +176,7 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
             slivers: [
               SliverAppBar(
                 elevation: 0,
-                backgroundColor: const Color(0xFF0C1E2C),
+                backgroundColor: kPrimary,
                 iconTheme: const IconThemeData(color: Colors.white),
                 expandedHeight: size.height * 0.34,
                 pinned: true,
@@ -201,15 +208,15 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
 
                       // Gradient overlay (top/bottom)
                       Container(
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Color(0xCC0C1E2C),
-                              Color(0x660C1E2C),
-                              Color(0x330C1E2C),
-                              Color(0x990C1E2C),
+                              kPrimary.withOpacity(0.8),
+                              kPrimary.withOpacity(0.4),
+                              kPrimary.withOpacity(0.2),
+                              kPrimary.withOpacity(0.6),
                             ],
                           ),
                         ),
@@ -231,81 +238,90 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
                   ),
                 ),
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.share, color: Colors.white),
-                    onPressed: _sharePlayground,
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: _isFavorite ? Colors.redAccent : Colors.white,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isFavorite = !_isFavorite;
-                        if (_isFavorite) _confettiController.play();
-                      });
-                    },
-                  ),
+
                 ],
               ),
 
               // Info section
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _InfoChipRow(
-                        rating: widget.playground['rating']?.toString() ?? '4.5',
-                        opening: widget.playground['openingTime']?.toString() ?? '08:00',
-                        closing: widget.playground['closingTime']?.toString() ?? '22:00',
-                      ),
-                      const SizedBox(height: 12),
-                      _LocationRow(
-                        location: widget.playground['location']?.toString() ?? 'Location not specified',
-                      ),
-                      const SizedBox(height: 16),
-                      if ((widget.playground['description']?.toString() ?? '').isNotEmpty) ...[
-                        const SectionTitle('About'),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.playground['description']?.toString() ?? 'No description available',
-                          style: const TextStyle(color: Colors.black87, height: 1.45, fontSize: 14.5),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: kBg,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _InfoChipRow(
+                          rating: widget.playground['rating']?.toString() ?? '4.5',
+                          opening: widget.playground['openingTime']?.toString() ?? '08:00',
+                          closing: widget.playground['closingTime']?.toString() ?? '22:00',
                         ),
-                      ],
-                      const SizedBox(height: 18),
-                      if ((widget.playground['facilities'] as List?)?.isNotEmpty ?? false) ...[
-                        const SectionTitle('Facilities'),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: ((widget.playground['facilities'] as List?) ?? [])
-                              .map((f) => Chip(
-                            label: Text(f.toString()),
-                            backgroundColor: const Color(0xFF0C1E2C).withOpacity(0.08),
-                            labelStyle: const TextStyle(color: Color(0xFF0C1E2C), fontWeight: FontWeight.w600),
-                          ))
-                              .toList(),
+                        const SizedBox(height: 16),
+                        _LocationRow(
+                          location: widget.playground['location']?.toString() ?? 'Location not specified',
                         ),
+                        const SizedBox(height: 20),
+                        if ((widget.playground['description']?.toString() ?? '').isNotEmpty) ...[
+                          const SectionTitle('About'),
+                          const SizedBox(height: 12),
+                          Text(
+                            widget.playground['description']?.toString() ?? 'No description available',
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withOpacity(0.9),
+                              height: 1.5,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 24),
+                        if ((widget.playground['facilities'] as List?)?.isNotEmpty ?? false) ...[
+                          const SectionTitle('Facilities'),
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: ((widget.playground['facilities'] as List?) ?? [])
+                                .map((f) => Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: kAccent.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: kAccent.withOpacity(0.3)),
+                              ),
+                              child: Text(
+                                f.toString(),
+                                style: GoogleFonts.poppins(
+                                  color: kAccent,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ))
+                                .toList(),
+                          ),
+                        ],
+                        const SizedBox(height: 28),
+                        const SectionTitle('Available Courts'),
+                        const SizedBox(height: 16),
                       ],
-                      const SizedBox(height: 22),
-                      const SectionTitle('Available Courts'),
-                      const SizedBox(height: 10),
-                    ],
+                    ),
                   ),
                 ),
               ),
 
               // Courts list
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                         (context, index) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(bottom: 16),
                       child: _CourtCard(
                         court: (widget.playground['courts'] as List)[index] as Map<String, dynamic>,
                         onTap: () {
@@ -315,7 +331,13 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
                               .toString();
                           if (pgId.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Invalid playground id')),
+                              SnackBar(
+                                content: Text(
+                                  'Invalid playground id',
+                                  style: GoogleFonts.poppins(),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                             return;
                           }
@@ -432,10 +454,10 @@ class _HeaderTitle extends StatelessWidget {
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
-                fontSize: 18,
+                fontSize: 20,
                 letterSpacing: 0.2,
                 shadows: [Shadow(color: Colors.black38, blurRadius: 6)],
               ),
@@ -482,21 +504,22 @@ class _InfoChipRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: (color ?? const Color(0xFF0C1E2C)).withOpacity(0.06),
+        color: (color ?? kAccent).withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12.withOpacity(0.06)),
+        border: Border.all(color: (color ?? kAccent).withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: textColor ?? const Color(0xFF0C1E2C)),
+          Icon(icon, size: 16, color: textColor ?? kAccent),
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(
-              color: textColor ?? const Color(0xFF0C1E2C),
+            style: GoogleFonts.poppins(
+              color: textColor ?? kAccent,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
+              fontSize: 13,
             ),
           ),
         ],
@@ -513,19 +536,20 @@ class _LocationRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(LucideIcons.mapPin, size: 16, color: Color(0xFF0C1E2C)),
+        const Icon(LucideIcons.mapPin, size: 16, color: Colors.white70),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             location,
-            style: const TextStyle(
-              color: Color(0xFF0C1E2C),
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
               fontWeight: FontWeight.w600,
               height: 1.2,
+              fontSize: 15,
             ),
           ),
         ),
-        const Icon(Icons.directions, size: 20, color: Color(0xFF0C1E2C)),
+        const Icon(Icons.directions, size: 20, color: Colors.white70),
       ],
     );
   }
@@ -539,10 +563,10 @@ class SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 18,
+      style: GoogleFonts.poppins(
+        fontSize: 20,
         fontWeight: FontWeight.w800,
-        color: Color(0xFF0C1E2C),
+        color: Colors.white,
         letterSpacing: 0.2,
       ),
     );
@@ -567,10 +591,10 @@ class _CourtCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 6))],
-          border: Border.all(color: Colors.black12.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,32 +614,39 @@ class _CourtCard extends StatelessWidget {
               ),
             ),
 
-            // Pricing quick glance
-            if (pricing.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: Row(
-                  children: [
-                    const Icon(LucideIcons.wallet, size: 18, color: Color(0xFF0C1E2C)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _priceSummary(pricing),
-                        style: const TextStyle(
-                          color: Color(0xFF0C1E2C),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right, color: Colors.black45),
-                  ],
-                ),
-              ),
-            ] else
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: Text('No pricing available', style: TextStyle(color: Colors.grey)),
-              ),
+                         // Pricing quick glance
+             if (pricing.isNotEmpty) ...[
+               Padding(
+                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                 child: Row(
+                   children: [
+                     const Icon(LucideIcons.wallet, size: 18, color: Colors.white70),
+                     const SizedBox(width: 8),
+                     Expanded(
+                       child: Text(
+                         _priceSummary(pricing),
+                         style: GoogleFonts.poppins(
+                           color: Colors.white,
+                           fontWeight: FontWeight.w700,
+                           fontSize: 14,
+                         ),
+                       ),
+                     ),
+                     const Icon(Icons.chevron_right, color: Colors.white70),
+                   ],
+                 ),
+               ),
+             ] else
+               Padding(
+                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                 child: Text(
+                   'No pricing available',
+                   style: GoogleFonts.poppins(
+                     color: Colors.white70,
+                     fontSize: 14,
+                   ),
+                 ),
+               ),
 
             // Peak hours
             if (peakHours.isNotEmpty) ...[
@@ -663,20 +694,22 @@ class _CourtCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0C1E2C).withOpacity(0.08),
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(LucideIcons.badgeCheck, size: 16, color: Color(0xFF0C1E2C)),
+          const Icon(LucideIcons.badgeCheck, size: 16, color: Colors.white),
           const SizedBox(width: 6),
           Text(
             text,
-            style: const TextStyle(
-              color: Color(0xFF0C1E2C),
+            style: GoogleFonts.poppins(
+              color: Colors.white,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.2,
+              fontSize: 13,
             ),
           ),
         ],
@@ -688,17 +721,22 @@ class _CourtCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.04),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(LucideIcons.layers, size: 14, color: Colors.black87),
+          const Icon(LucideIcons.layers, size: 14, color: Colors.white70),
           const SizedBox(width: 6),
           Text(
             text,
-            style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w700),
+            style: GoogleFonts.poppins(
+              color: Colors.white70,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
           ),
         ],
       ),

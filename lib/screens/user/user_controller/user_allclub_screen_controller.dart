@@ -73,6 +73,10 @@ class UserClubScreenController extends GetxController {
     }
   }
 
+  Future<void> refreshData() async {
+    await fetchPlaygrounds();
+  }
+
   String getPlaygroundPrice(Map<String, dynamic> playground) {
     final courts = playground['courts'] as List<dynamic>?;
 

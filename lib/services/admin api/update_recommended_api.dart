@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Simple response model
 class ApiResponse {
@@ -12,30 +13,33 @@ class ApiResponse {
 }
 
 class RecommendedStatusService {
-  // TODO: Set your real base URL
-  static const String baseUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app';
+  static const String baseUrl =
+      'https://padel-backend-git-main-invosegs-projects.vercel.app';
 
-  // If your backend route is different, adjust the path below accordingly.
-  // Backend given:
-  // exports.updateRecommendedStatus = async (req, res) => {
-  //   const playground = await Playground.findByIdAndUpdate(req.params.id, { recommended }, { new: true, runValidators: true });
-  // }
-  //
-  // Common REST shape:
-  // PUT or PATCH /playgrounds/:id/recommended
-  // Body: { "recommended": true/false }
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+  static Future<String?> _getToken() => _storage.read(key: 'token');
+
   Future<ApiResponse> updateRecommendedStatus({
     required String id,
     required bool recommended,
   }) async {
-    final uri = Uri.parse('$baseUrl/playgrounds/$id/recommended');
+    final uri = Uri.parse('$baseUrl/api/v1/playground/updateRecommended/$id');
 
     try {
-      final res = await http.put(
+      final token = await _getToken();
+      if (token == null || token.isEmpty) {
+        return ApiResponse(
+          isOk: false,
+          message: 'Auth token missing. Save it first with FlutterSecureStorage.',
+        );
+      }
+
+      final res = await http.patch(
         uri,
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer <token>', // if needed
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode({'recommended': recommended}),
       );
@@ -46,7 +50,9 @@ class RecommendedStatusService {
         return ApiResponse(
           isOk: true,
           statusCode: res.statusCode,
-          message: (body is Map && body['message'] is String) ? body['message'] : 'OK',
+          message: (body is Map && body['message'] is String)
+              ? body['message']
+              : 'OK',
           data: body,
         );
       } else {
