@@ -14,7 +14,7 @@ class ClubCard extends StatelessWidget {
   final VoidCallback onView;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-
+  final String status;
   final List<String> imageUrls;
 
   ClubCard({
@@ -24,6 +24,7 @@ class ClubCard extends StatelessWidget {
     required this.courts,
     required this.onView,
     required this.onEdit,
+    this.status = 'pending',
     required this.onDelete,
     this.imageUrls = const [],
   });
@@ -32,6 +33,11 @@ class ClubCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isActive = status.toLowerCase() ==  'active';
+    final statusColor = isActive ? Colors.green.shade400 : Colors.amber.shade600;
+    final statusIcon = isActive ? LucideIcons.checkCircle : LucideIcons.clock;
+    final statusText = isActive ? 'Active' : 'Pending';
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

@@ -6,10 +6,15 @@ import 'package:padel_pro/services/admin%20api/activate_court_api.dart';
 class PendingCourtsController extends GetxController {
   final FetchPendingCourtsApi _pendingCourtsApi = FetchPendingCourtsApi();
   final ActivateCourtApi _activateCourtApi = ActivateCourtApi();
-  
+
   final RxList<PendingCourt> pendingCourts = <PendingCourt>[].obs;
   final RxBool isLoading = false.obs;
-  final RxBool isActivating = false.obs;
+  // Remove the general isActivating flag
+  // final RxBool isActivating = false.obs;
+
+  // Add a map to track activation status for each court
+  final RxMap<String, bool> activatingCourts = <String, bool>{}.obs;
+
   final RxString errorMessage = ''.obs;
 
   @override
@@ -22,7 +27,7 @@ class PendingCourtsController extends GetxController {
     try {
       isLoading.value = true;
       errorMessage.value = '';
-      
+
       final courts = await _pendingCourtsApi.fetchPendingCourts();
       pendingCourts.value = courts;
     } catch (e) {
@@ -32,16 +37,25 @@ class PendingCourtsController extends GetxController {
     }
   }
 
+  // Check if a specific court is being activated
+  bool isCourtActivating(String playgroundId, String courtNumber) {
+    final key = "$playgroundId-$courtNumber";
+    return activatingCourts[key] ?? false;
+  }
+
   Future<void> activateCourt(String playgroundId, String courtNumber) async {
+    final key = "$playgroundId-$courtNumber";
+
     try {
-      isActivating.value = true;
+      // Set loading state for this specific court only
+      activatingCourts[key] = true;
       errorMessage.value = '';
-      
+
       await _activateCourtApi.activateCourt(playgroundId, courtNumber);
-      
+
       // Refresh the list after activation
       await fetchPendingCourts();
-      
+
       Get.snackbar(
         'Success',
         'Court activated successfully',
@@ -59,7 +73,8 @@ class PendingCourtsController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
-      isActivating.value = false;
+      // Clear loading state for this specific court
+      activatingCourts.remove(key);
     }
   }
 

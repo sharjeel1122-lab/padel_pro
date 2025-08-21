@@ -614,39 +614,39 @@ class _CourtCard extends StatelessWidget {
               ),
             ),
 
-                         // Pricing quick glance
-             if (pricing.isNotEmpty) ...[
-               Padding(
-                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                 child: Row(
-                   children: [
-                     const Icon(LucideIcons.wallet, size: 18, color: Colors.white70),
-                     const SizedBox(width: 8),
-                     Expanded(
-                       child: Text(
-                         _priceSummary(pricing),
-                         style: GoogleFonts.poppins(
-                           color: Colors.white,
-                           fontWeight: FontWeight.w700,
-                           fontSize: 14,
-                         ),
-                       ),
-                     ),
-                     const Icon(Icons.chevron_right, color: Colors.white70),
-                   ],
-                 ),
-               ),
-             ] else
-               Padding(
-                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                 child: Text(
-                   'No pricing available',
-                   style: GoogleFonts.poppins(
-                     color: Colors.white70,
-                     fontSize: 14,
-                   ),
-                 ),
-               ),
+            // Pricing quick glance
+            if (pricing.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.wallet, size: 18, color: Colors.white70),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _priceSummary(pricing),
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, color: Colors.white70),
+                  ],
+                ),
+              ),
+            ] else
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Text(
+                  'No pricing available',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
 
             // Peak hours
             if (peakHours.isNotEmpty) ...[

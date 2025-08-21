@@ -68,26 +68,26 @@ class StatsGrid extends StatelessWidget {
           }
 
           return GridView.count(
-            crossAxisCount: isWide ? 4 : 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            children: [
-              // Mapped to your controller values:
-              // totalCourts -> Total Users
-              // vendors     -> Total Vendors
-              // products    -> Total Clubs
-              // requests    -> Pending Requests
-              _statCard(Icons.people, "Total Users",
-                  controller.totalCourts.value.toString() == "0"? "0":
-                  "${controller.totalCourts.value-1}"),
-              _statCard(Icons.storefront, "Total Vendors",
-                  "${controller.vendors.value}"),
-              _statCard(Icons.sports_tennis, "Total Clubs",
-                  "${controller.products.value}"),
-              _statCard(Icons.notifications_active, "Pending Requests",
-                  "${controller.requests.value}"),
+        crossAxisCount: isWide ? 4 : 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        children: [
+          // Mapped to your controller values:
+          // totalCourts -> Total Users
+          // vendors     -> Total Vendors
+          // products    -> Total Clubs
+          // requests    -> Pending Requests
+          _statCard(Icons.people, "Total Users",
+              controller.totalCourts.value.toString() == "0"? "0":
+              "${controller.totalCourts.value-1}"),
+          _statCard(Icons.storefront, "Total Vendors",
+              "${controller.vendors.value}"),
+          _statCard(Icons.sports_tennis, "Total Clubs",
+              "${controller.products.value}"),
+          _statCard(Icons.notifications_active, "Pending Requests",
+              "${controller.requests.value}"),
             ],
           );
         }),

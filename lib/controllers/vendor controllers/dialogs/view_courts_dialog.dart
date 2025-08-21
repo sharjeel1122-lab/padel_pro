@@ -18,7 +18,7 @@ class ViewCourtsDialog {
     final pageCtrl = ScrollController();
     final clubId = (club['_id'] ?? '').toString();
     final RxList<Map<String, dynamic>> currentCourts = <Map<String, dynamic>>[
-      ...courts.map((e) => Map<String, dynamic>.from(e as Map))
+      ...courts.map((e) => Map<String, dynamic>.from(e as Map)),
     ].obs;
 
     Timer? viewCourtsTimer;
@@ -93,29 +93,25 @@ class ViewCourtsDialog {
                         IconButton(
                           tooltip: 'Add Court',
                           onPressed: () {
-                            AddCourtDialog.show(
-                              clubId,
-                              vendorApi,
-                              () async {
-                                onRefresh();
-                                // refresh the local list inside the dialog
-                                final updated = await fetchVendorApi.getVendorPlaygrounds();
-                                final updatedClub = updated.firstWhere(
-                                  (c) => (c['_id'] ?? '') == club['_id'],
-                                  orElse: () => {},
-                                );
-                                final updatedCourts =
-                                    (updatedClub['courts'] as List? ?? [])
-                                        .map(
-                                          (e) => Map<String, dynamic>.from(
-                                        e as Map,
-                                      ),
-                                    )
-                                        .toList();
-                                currentCourts.assignAll(updatedCourts);
-                                onCourtsUpdated(updatedCourts);
-                              },
-                            );
+                            AddCourtDialog.show(clubId, vendorApi, () async {
+                              onRefresh();
+                              // refresh the local list inside the dialog
+                              final updated = await fetchVendorApi
+                                  .getVendorPlaygrounds();
+                              final updatedClub = updated.firstWhere(
+                                (c) => (c['_id'] ?? '') == club['_id'],
+                                orElse: () => {},
+                              );
+                              final updatedCourts =
+                                  (updatedClub['courts'] as List? ?? [])
+                                      .map(
+                                        (e) =>
+                                            Map<String, dynamic>.from(e as Map),
+                                      )
+                                      .toList();
+                              currentCourts.assignAll(updatedCourts);
+                              onCourtsUpdated(updatedCourts);
+                            });
                           },
                           icon: const Icon(
                             Icons.add,
@@ -148,7 +144,9 @@ class ViewCourtsDialog {
                         interactive: true,
                         child: SingleChildScrollView(
                           controller: pageCtrl,
-                          physics: const BouncingScrollPhysics(),
+                          physics: const BouncingScrollPhysics(
+
+                          ),
                           child: LayoutBuilder(
                             builder: (_, constraints) {
                               final maxW = constraints.maxWidth;
@@ -166,31 +164,50 @@ class ViewCourtsDialog {
                                   final c = currentCourts[i];
                                   final name =
                                       c['courtNumber']?.toString() ??
-                                          'Court ${i + 1}';
+                                      'Court ${i + 1}';
                                   final types =
                                       (c['courtType'] as List?)
                                           ?.cast<String>() ??
-                                          [];
+                                      [];
                                   final pricing =
                                       (c['pricing'] as List?)
                                           ?.map(
                                             (e) => Map<String, dynamic>.from(
-                                          e as Map,
-                                        ),
-                                      )
+                                              e as Map,
+                                            ),
+                                          )
                                           .toList() ??
-                                          [];
+                                      [];
                                   final peakHours =
                                       (c['peakHours'] as List?)
                                           ?.map(
                                             (e) => Map<String, dynamic>.from(
-                                          e as Map,
-                                        ),
-                                      )
+                                              e as Map,
+                                            ),
+                                          )
                                           .toList() ??
-                                          [];
+                                      [];
                                   final description =
                                       c['description']?.toString() ?? '';
+
+                                  // Determine court status
+                                  final status =
+                                      c['status']?.toString().toLowerCase() ??
+                                      'pending';
+                                  final isActive =
+                                      c['isActive'] == true ||
+                                      status == 'active';
+
+                                  // Status badge styling
+                                  final Color statusColor = isActive
+                                      ? Colors.green
+                                      : Colors.amber;
+                                  final IconData statusIcon = isActive
+                                      ? Icons.check_circle
+                                      : Icons.pending;
+                                  final String statusText = isActive
+                                      ? 'ACTIVE'
+                                      : 'PENDING';
 
                                   return SizedBox(
                                     width: cardW,
@@ -221,16 +238,73 @@ class ViewCourtsDialog {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  name,
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF0C1E2C),
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w800,
-                                                  ),
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                // Court name with status badge
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      name,
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xFF0C1E2C,
+                                                        ),
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    // Status badge
+                                                    Positioned(
+                                                      right: 0,
+
+                                                      top: 0,
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 8,
+                                                              vertical: 4,
+                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: statusColor,
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                12,
+                                                              ),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: [
+                                                            Icon(
+                                                              statusIcon,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 12,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            Text(
+                                                              statusText,
+                                                              style: const TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
 
                                                 if (description.isNotEmpty) ...[
@@ -253,34 +327,34 @@ class ViewCourtsDialog {
                                                     children: types
                                                         .map(
                                                           (t) => Container(
-                                                        padding:
-                                                            const EdgeInsets.symmetric(
-                                                          horizontal:
-                                                              10,
-                                                          vertical: 5,
-                                                        ),
-                                                        decoration: BoxDecoration(
-                                                          color:
-                                                              const Color(
-                                                                0xFF0C1E2C,
-                                                              ),
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                            8,
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal:
+                                                                      10,
+                                                                  vertical: 5,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFF0C1E2C,
+                                                                  ),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    8,
+                                                                  ),
+                                                            ),
+                                                            child: Text(
+                                                              t,
+                                                              style:
+                                                                  const TextStyle(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontSize:
+                                                                        12,
+                                                                  ),
+                                                            ),
                                                           ),
-                                                        ),
-                                                        child: Text(
-                                                          t,
-                                                          style:
-                                                              const TextStyle(
-                                                            color: Colors
-                                                                .white,
-                                                            fontSize:
-                                                                12,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    )
+                                                        )
                                                         .toList(),
                                                   ),
                                                 ],
@@ -299,8 +373,8 @@ class ViewCourtsDialog {
                                                   Padding(
                                                     padding:
                                                         const EdgeInsets.only(
-                                                      top: 2,
-                                                    ),
+                                                          top: 2,
+                                                        ),
                                                     child: Text(
                                                       'No pricing available',
                                                       style: TextStyle(
@@ -316,16 +390,16 @@ class ViewCourtsDialog {
                                                       final duration =
                                                           p['duration']
                                                               ?.toString() ??
-                                                              '0';
+                                                          '0';
                                                       final price =
                                                           p['price']
                                                               ?.toString() ??
-                                                              '0';
+                                                          '0';
                                                       return Padding(
                                                         padding:
                                                             const EdgeInsets.symmetric(
-                                                          vertical: 3,
-                                                        ),
+                                                              vertical: 3,
+                                                            ),
                                                         child: Row(
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
@@ -334,8 +408,8 @@ class ViewCourtsDialog {
                                                             Padding(
                                                               padding:
                                                                   const EdgeInsets.only(
-                                                                top: 7.0,
-                                                              ),
+                                                                    top: 7.0,
+                                                                  ),
                                                               child: Container(
                                                                 width: 6,
                                                                 height: 6,
@@ -345,8 +419,8 @@ class ViewCourtsDialog {
                                                                   ),
                                                                   borderRadius:
                                                                       BorderRadius.circular(
-                                                                    3,
-                                                                  ),
+                                                                        3,
+                                                                      ),
                                                                 ),
                                                               ),
                                                             ),
@@ -406,25 +480,25 @@ class ViewCourtsDialog {
                                                 else
                                                   Column(
                                                     children: peakHours.map((
-                                                        ph,
-                                                        ) {
+                                                      ph,
+                                                    ) {
                                                       final st =
                                                           ph['startTime']
                                                               ?.toString() ??
-                                                              '--:--';
+                                                          '--:--';
                                                       final et =
                                                           ph['endTime']
                                                               ?.toString() ??
-                                                              '--:--';
+                                                          '--:--';
                                                       final pr =
                                                           ph['price']
                                                               ?.toString() ??
-                                                              '0';
+                                                          '0';
                                                       return Padding(
                                                         padding:
                                                             const EdgeInsets.symmetric(
-                                                          vertical: 3,
-                                                        ),
+                                                              vertical: 3,
+                                                            ),
                                                         child: Row(
                                                           children: [
                                                             const Icon(
@@ -473,45 +547,71 @@ class ViewCourtsDialog {
                                                     style: ElevatedButton.styleFrom(
                                                       backgroundColor:
                                                           const Color(
-                                                        0xFF0C1E2C,
-                                                      ),
+                                                            0xFF0C1E2C,
+                                                          ),
                                                       foregroundColor:
                                                           Colors.white,
                                                       shape: RoundedRectangleBorder(
                                                         borderRadius:
                                                             BorderRadius.circular(
-                                                          12,
-                                                        ),
+                                                              12,
+                                                            ),
                                                       ),
                                                       padding:
                                                           const EdgeInsets.symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 10,
-                                                      ),
+                                                            horizontal: 16,
+                                                            vertical: 10,
+                                                          ),
                                                     ),
                                                     onPressed: () {
                                                       EditCourtDialog.show(
                                                         clubId,
                                                         c,
-                                                        (id, body) => fetchVendorApi.updateCourtById(id, body),
+                                                        (
+                                                          id,
+                                                          body,
+                                                        ) => fetchVendorApi
+                                                            .updateCourtById(
+                                                              id,
+                                                              body,
+                                                            ),
                                                         () async {
                                                           onRefresh();
                                                           // refresh the local list inside the dialog
-                                                          final updated = await fetchVendorApi.getVendorPlaygrounds();
-                                                          final updatedClub = updated.firstWhere(
-                                                            (c) => (c['_id'] ?? '') == club['_id'],
-                                                            orElse: () => {},
-                                                          );
+                                                          final updated =
+                                                              await fetchVendorApi
+                                                                  .getVendorPlaygrounds();
+                                                          final updatedClub =
+                                                              updated.firstWhere(
+                                                                (c) =>
+                                                                    (c['_id'] ??
+                                                                        '') ==
+                                                                    club['_id'],
+                                                                orElse: () =>
+                                                                    {},
+                                                              );
                                                           final updatedCourts =
-                                                              (updatedClub['courts'] as List? ?? [])
+                                                              (updatedClub['courts']
+                                                                          as List? ??
+                                                                      [])
                                                                   .map(
-                                                                    (e) => Map<String, dynamic>.from(
-                                                                  e as Map,
-                                                                ),
-                                                              )
+                                                                    (e) =>
+                                                                        Map<
+                                                                          String,
+                                                                          dynamic
+                                                                        >.from(
+                                                                          e
+                                                                              as Map,
+                                                                        ),
+                                                                  )
                                                                   .toList();
-                                                          currentCourts.assignAll(updatedCourts);
-                                                          onCourtsUpdated(updatedCourts);
+                                                          currentCourts
+                                                              .assignAll(
+                                                                updatedCourts,
+                                                              );
+                                                          onCourtsUpdated(
+                                                            updatedCourts,
+                                                          );
                                                         },
                                                       );
                                                     },
@@ -573,7 +673,10 @@ class ViewCourtsDialog {
     return true;
   }
 
-  static bool _mapShallowEquals(Map<String, dynamic> a, Map<String, dynamic> b) {
+  static bool _mapShallowEquals(
+    Map<String, dynamic> a,
+    Map<String, dynamic> b,
+  ) {
     if (a.length != b.length) return false;
     for (final k in a.keys) {
       final va = a[k], vb = b[k];

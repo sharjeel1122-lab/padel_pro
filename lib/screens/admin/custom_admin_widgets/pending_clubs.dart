@@ -27,17 +27,17 @@ class PendingCourtsWidget extends StatelessWidget {
                 )),
             Obx(() => controller.isLoading.value
                 ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
                 : IconButton(
-                    onPressed: controller.refreshData,
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                  )),
+              onPressed: controller.refreshData,
+              icon: const Icon(Icons.refresh, color: Colors.white),
+            )),
           ],
         ),
         const SizedBox(height: 12),
@@ -112,7 +112,7 @@ class PendingCourtsWidget extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               separatorBuilder: (_, __) =>
-                  const Divider(color: Colors.white10, height: 0),
+              const Divider(color: Colors.white10, height: 0),
               itemBuilder: (context, index) {
                 final pendingCourt = controller.pendingCourts[index];
                 return _buildPlaygroundCard(pendingCourt);
@@ -225,33 +225,34 @@ class PendingCourtsWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Obx(() => controller.isActivating.value
+          // Use the new method to check if this specific court is being activated
+          Obx(() => controller.isCourtActivating(pendingCourt.playgroundId, court.courtNumber)
               ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          )
               : ElevatedButton(
-                  onPressed: () => _showActivationDialog(pendingCourt, court),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    "Activate",
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                )),
+            onPressed: () => _showActivationDialog(pendingCourt, court),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              "Activate",
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          )),
         ],
       ),
     );

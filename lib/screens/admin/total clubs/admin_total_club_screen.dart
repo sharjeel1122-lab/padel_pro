@@ -56,33 +56,33 @@ class AdminClubScreen extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              _buildSearchBar(),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildSearchBar(),
               const SizedBox(height: 20),
               _buildStatsRow(),
               const SizedBox(height: 20),
-              Expanded(
-                child: Obx(() {
-                  if (userClubController.isLoading.value) {
+            Expanded(
+              child: Obx(() {
+                if (userClubController.isLoading.value) {
                     return _buildLoadingState();
-                  }
+                }
 
-                  if (userClubController.playgrounds.isEmpty) {
+                if (userClubController.playgrounds.isEmpty) {
                     return _buildEmptyState();
-                  }
+                }
 
-                  return ListView.builder(
-                    itemCount: userClubController.playgrounds.length,
-                    itemBuilder: (context, index) {
-                      final playground = userClubController.playgrounds[index];
-                      return _buildPlaygroundCard(playground, context);
-                    },
-                  );
-                }),
-              ),
-            ],
+                return ListView.builder(
+                  itemCount: userClubController.playgrounds.length,
+                  itemBuilder: (context, index) {
+                    final playground = userClubController.playgrounds[index];
+                    return _buildPlaygroundCard(playground, context);
+                  },
+                );
+              }),
+            ),
+          ],
           ),
         ),
       ),
@@ -122,11 +122,11 @@ class AdminClubScreen extends StatelessWidget {
           suffixIcon: userClubController.searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, color: Colors.white70),
-                  onPressed: () {
-                    userClubController.searchController.clear();
-                    userClubController.searchPlaygrounds('');
-                  },
-                )
+            onPressed: () {
+              userClubController.searchController.clear();
+              userClubController.searchPlaygrounds('');
+            },
+          )
               : null,
         ),
       ),
@@ -288,14 +288,14 @@ class AdminClubScreen extends StatelessWidget {
           // Image with overlay
           Stack(
             children: [
-              ClipRRect(
+          ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: Image.network(
-                  photos.isNotEmpty ? photos[0] : 'https://via.placeholder.com/180x180',
+            child: Image.network(
+              photos.isNotEmpty ? photos[0] : 'https://via.placeholder.com/180x180',
                   height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
                     height: 200,
                     color: Colors.grey[800],
                     child: const Icon(Icons.image, size: 50, color: Colors.white70),
@@ -378,19 +378,19 @@ class AdminClubScreen extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: [
+                      children: [
                           const Icon(Icons.star, color: Colors.amber, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            rating.toString(),
+                        const SizedBox(width: 4),
+                        Text(
+                          rating.toString(),
                             style: GoogleFonts.poppins(
                               color: Colors.amber,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                    ),
+                  ],
+                ),
                     ),
                   ],
                 ),
@@ -439,11 +439,11 @@ class AdminClubScreen extends StatelessWidget {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: [
+                      children: [
                           const Icon(LucideIcons.layoutPanelTop, size: 16, color: kAccent),
                           const SizedBox(width: 6),
-                          Text(
-                            '${courts.length} Courts',
+                        Text(
+                          '${courts.length} Courts',
                             style: GoogleFonts.poppins(
                               color: kAccent,
                               fontWeight: FontWeight.w600,
@@ -461,9 +461,9 @@ class AdminClubScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'From Rs. ${userClubController.getPlaygroundPrice(playground)}/hour',
+                      'From Rs. ${userClubController.getPlaygroundPrice(playground)}/hour',
                         style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                           color: Colors.green,
                           fontSize: 14,
                         ),
@@ -479,8 +479,8 @@ class AdminClubScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => Get.to(() => AdminClubDetailScreen(playground: playground)),
-                        style: OutlinedButton.styleFrom(
+                      onPressed: () => Get.to(() => AdminClubDetailScreen(playground: playground)),
+                      style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.white),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -502,40 +502,40 @@ class AdminClubScreen extends StatelessWidget {
                     Expanded(
                       child: Obx(() {
                         final loading = recommendedController.isBusyFor(playground['_id'] ?? '').value;
-                        final rec = (playground['recommended'] ?? false) as bool;
+                      final rec = (playground['recommended'] ?? false) as bool;
 
-                        return ElevatedButton.icon(
-                          onPressed: loading
-                              ? null
-                              : () async {
-                            final confirm = await _confirmRecommendDialog(rec);
-                            if (confirm != true) return;
+                      return ElevatedButton.icon(
+                        onPressed: loading
+                            ? null
+                            : () async {
+                          final confirm = await _confirmRecommendDialog(rec);
+                          if (confirm != true) return;
 
-                            await recommendedController.updateRecommended(
+                          await recommendedController.updateRecommended(
                               id: playground['_id']?.toString() ?? '',
-                              recommended: !rec,
-                              onLocalSuccess: () {
-                                // reflect in list immediately
-                                final idx = userClubController.playgrounds.indexWhere(
+                            recommended: !rec,
+                            onLocalSuccess: () {
+                              // reflect in list immediately
+                              final idx = userClubController.playgrounds.indexWhere(
                                       (p) => p['_id']?.toString() == playground['_id']?.toString(),
-                                );
-                                if (idx != -1) {
-                                  userClubController.playgrounds[idx]['recommended'] = !rec;
-                                  userClubController.playgrounds.refresh();
-                                }
-                              },
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
+                              );
+                              if (idx != -1) {
+                                userClubController.playgrounds[idx]['recommended'] = !rec;
+                                userClubController.playgrounds.refresh();
+                              }
+                            },
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
                             backgroundColor: rec ? Colors.redAccent : Colors.orange,
-                            foregroundColor: Colors.white,
+                          foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                          ),
-                          icon: loading
-                              ? const SizedBox(
+                        ),
+                        icon: loading
+                            ? const SizedBox(
                                   width: 18, height: 18, 
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
@@ -553,8 +553,8 @@ class AdminClubScreen extends StatelessWidget {
                               fontSize: 14,
                             ),
                           ),
-                        );
-                      }),
+                      );
+                    }),
                     ),
                   ],
                 ),
@@ -610,7 +610,7 @@ class AdminClubScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: () => Get.back(result: true),
+        onPressed: () => Get.back(result: true),
             child: Text(
               'Confirm',
               style: GoogleFonts.poppins(
