@@ -13,10 +13,14 @@ class BookingSheet extends StatelessWidget {
     super.key,
     required this.playgroundId,
     required this.courts,
+    this.openingTime,
+    this.closingTime,
   });
 
   final String playgroundId;
   final List courts;
+  final String? openingTime; // Format: "HH:MM"
+  final String? closingTime; // Format: "HH:MM"
 
   // ---- helpers ----
 
@@ -56,7 +60,161 @@ class BookingSheet extends StatelessWidget {
     return list.isEmpty ? [60] : list;
   }
 
-  num? _priceFor(String? courtNumber, int? duration) {
+  // Check if a time is within the club's operating hours
+  bool _isWithinOperatingHours(TimeOfDay time) {
+    if (openingTime == null || closingTime == null) return true;
+
+    // Parse opening and closing times
+    final openParts = openingTime!.split(':');
+    final closeParts = closingTime!.split(':');
+
+    if (openParts.length < 2 || closeParts.length < 2) return true;
+
+    final openHour = int.tryParse(openParts[0]) ?? 0;
+    final openMinute = int.tryParse(openParts[1]) ?? 0;
+    final closeHour = int.tryParse(closeParts[0]) ?? 23;
+    final closeMinute = int.tryParse(closeParts[1]) ?? 59;
+
+    final openTimeOfDay = TimeOfDay(hour: openHour, minute: openMinute);
+    final closeTimeOfDay = TimeOfDay(hour: closeHour, minute: closeMinute);
+
+    // Convert to minutes for easier comparison
+    final openMinutes = openTimeOfDay.hour * 60 + openTimeOfDay.minute;
+    final closeMinutes = closeTimeOfDay.hour * 60 + closeTimeOfDay.minute;
+    final selectedMinutes = time.hour * 60 + time.minute;
+
+    // Handle cases where closing time is on the next day
+    if (closeMinutes < openMinutes) {
+      return selectedMinutes >= openMinutes || selectedMinutes <= closeMinutes;
+    }
+
+    return selectedMinutes >= openMinutes && selectedMinutes <= closeMinutes;
+  }
+
+  // Check if a time falls within peak hours for a specific court
+  bool _isDuringPeakHours(String? courtNumber, TimeOfDay time) {
+    if (courtNumber == null || courtNumber.isEmpty) return false;
+
+    final idx = courts.indexWhere((c) =>
+    (c['courtNumber']?.toString() ?? c['courtName']?.toString() ?? '') == courtNumber);
+    if (idx < 0) return false;
+
+    final court = courts[idx];
+    final peakHours = (court['peakHours'] as List?) ?? [];
+
+    if (peakHours.isEmpty) return false;
+
+    // Convert selected time to minutes for easier comparison
+    final selectedMinutes = time.hour * 60 + time.minute;
+
+    for (final peak in peakHours) {
+      final startTime = peak['startTime']?.toString() ?? '';
+      final endTime = peak['endTime']?.toString() ?? '';
+
+      if (startTime.isEmpty || endTime.isEmpty) continue;
+
+      final startParts = startTime.split(':');
+      final endParts = endTime.split(':');
+
+      if (startParts.length < 2 || endParts.length < 2) continue;
+
+      final startHour = int.tryParse(startParts[0]) ?? 0;
+      final startMinute = int.tryParse(startParts[1]) ?? 0;
+      final endHour = int.tryParse(endParts[0]) ?? 0;
+      final endMinute = int.tryParse(endParts[1]) ?? 0;
+
+      final startMinutes = startHour * 60 + startMinute;
+      final endMinutes = endHour * 60 + endMinute;
+
+      // Handle cases where peak hours cross midnight
+      if (endMinutes < startMinutes) {
+        if (selectedMinutes >= startMinutes || selectedMinutes < endMinutes) {
+          return true;
+        }
+      } else if (selectedMinutes >= startMinutes && selectedMinutes < endMinutes) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Get peak hour price adjustment for a specific court and time with duration consideration
+  num? _getPeakHourPriceAdjustment(String? courtNumber, TimeOfDay? time, {int? duration}) {
+    if (courtNumber == null || courtNumber.isEmpty || time == null) return null;
+
+    final idx = courts.indexWhere((c) =>
+    (c['courtNumber']?.toString() ?? c['courtName']?.toString() ?? '') == courtNumber);
+    if (idx < 0) return null;
+
+    final court = courts[idx];
+    final peakHours = (court['peakHours'] as List?) ?? [];
+
+    if (peakHours.isEmpty) return null;
+
+    // Convert selected time to minutes for easier comparison
+    final selectedMinutes = time.hour * 60 + time.minute;
+
+    for (final peak in peakHours) {
+      final startTime = peak['startTime']?.toString() ?? '';
+      final endTime = peak['endTime']?.toString() ?? '';
+      final peakPrice = peak['price'];
+
+      if (startTime.isEmpty || endTime.isEmpty || peakPrice == null) continue;
+
+      final startParts = startTime.split(':');
+      final endParts = endTime.split(':');
+
+      if (startParts.length < 2 || endParts.length < 2) continue;
+
+      final startHour = int.tryParse(startParts[0]) ?? 0;
+      final startMinute = int.tryParse(startParts[1]) ?? 0;
+      final endHour = int.tryParse(endParts[0]) ?? 0;
+      final endMinute = int.tryParse(endParts[1]) ?? 0;
+
+      final startMinutes = startHour * 60 + startMinute;
+      final endMinutes = endHour * 60 + endMinute;
+      
+      // Calculate total peak hour duration in minutes
+      int totalPeakMinutes = endMinutes - startMinutes;
+      if (totalPeakMinutes < 0) { // Handle cases where peak hours cross midnight
+        totalPeakMinutes = (24 * 60) - startMinutes + endMinutes;
+      }
+      
+      // Handle cases where peak hours cross midnight
+      bool isInPeakHours = false;
+      if (endMinutes < startMinutes) {
+        isInPeakHours = selectedMinutes >= startMinutes || selectedMinutes < endMinutes;
+      } else {
+        isInPeakHours = selectedMinutes >= startMinutes && selectedMinutes < endMinutes;
+      }
+      
+      if (isInPeakHours) {
+        num? peakPriceValue;
+        if (peakPrice is num) {
+          peakPriceValue = peakPrice;
+        } else {
+          peakPriceValue = num.tryParse(peakPrice.toString());
+        }
+        
+        // If duration is provided, calculate proportional price
+        if (duration != null && peakPriceValue != null && totalPeakMinutes > 0) {
+          // Calculate the proportion of the booking duration to the total peak hours
+          final proportion = duration / totalPeakMinutes;
+          // If booking is shorter than peak period, adjust price proportionally
+          if (proportion < 1.0) {
+            return peakPriceValue * proportion;
+          }
+        }
+        
+        return peakPriceValue;
+      }
+    }
+
+    return null;
+  }
+
+  num? _priceFor(String? courtNumber, int? duration, {TimeOfDay? selectedTime}) {
     if (courtNumber == null || courtNumber.isEmpty || duration == null) return null;
 
     final idx = courts.indexWhere((c) =>
@@ -69,9 +227,23 @@ class BookingSheet extends StatelessWidget {
       final d = int.tryParse(p['duration']?.toString() ?? '');
       if (d == duration) {
         final val = p['price'];
-        if (val is num) return val;
-        final parsed = num.tryParse(val?.toString() ?? '');
-        if (parsed != null) return parsed;
+        num? basePrice;
+
+        if (val is num) {
+          basePrice = val;
+        } else {
+          basePrice = num.tryParse(val?.toString() ?? '');
+        }
+
+        // Apply peak hour pricing if applicable
+        if (basePrice != null && selectedTime != null) {
+          final peakPrice = _getPeakHourPriceAdjustment(courtNumber, selectedTime, duration: duration);
+          if (peakPrice != null) {
+            return peakPrice;
+          }
+        }
+
+        return basePrice;
       }
     }
     return null;
@@ -127,7 +299,11 @@ class BookingSheet extends StatelessWidget {
                           .map((h) => Center(
                         child: Text(
                           h.toString().padLeft(2, '0'),
-                          style: const TextStyle(fontSize: 18, color: Colors.black),
+                          style: TextStyle(
+                            fontSize: 18, 
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold
+                          ),
                         ),
                       ))
                           .toList(),
@@ -145,7 +321,11 @@ class BookingSheet extends StatelessWidget {
                           .map((m) => Center(
                         child: Text(
                           m.toString().padLeft(2, '0'),
-                          style: const TextStyle(fontSize: 18, color: Colors.black),
+                          style: TextStyle(
+                            fontSize: 18, 
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold
+                          ),
                         ),
                       ))
                           .toList(),
@@ -163,7 +343,43 @@ class BookingSheet extends StatelessWidget {
             TextButton(
               onPressed: () {
                 final int minute = quarterMinutes[selectedMinuteIndex];
-                Navigator.of(ctx).pop(TimeOfDay(hour: selectedHour, minute: minute));
+                final selectedTime = TimeOfDay(hour: selectedHour, minute: minute);
+                
+                // Check if the selected time is in the past
+                final now = DateTime.now();
+                final today = DateTime(now.year, now.month, now.day);
+                final selectedDate = Get.find<BookingController>(tag: 'booking-$playgroundId').selectedDate.value ?? today;
+                
+                if (selectedDate.year == today.year && 
+                    selectedDate.month == today.month && 
+                    selectedDate.day == today.day) {
+                  // Only check for past time if the selected date is today
+                  final currentTime = TimeOfDay.now();
+                  final currentMinutes = currentTime.hour * 60 + currentTime.minute;
+                  final selectedMinutes = selectedTime.hour * 60 + selectedTime.minute;
+                  
+                  if (selectedMinutes <= currentMinutes) {
+                    // Show a snackbar message but don't close the time picker
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          'The selected time has already passed. Please select a future time slot.',
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        backgroundColor: Colors.orange.shade800,
+                        duration: const Duration(seconds: 3),
+                        action: SnackBarAction(
+                          label: 'OK',
+                          textColor: Colors.white,
+                          onPressed: () {},
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+                }
+                
+                Navigator.of(ctx).pop(selectedTime);
               },
               child: const Text('OK', style: TextStyle(color: Color(0xFF0C1E2C), fontWeight: FontWeight.w600)),
             ),
@@ -247,18 +463,66 @@ class BookingSheet extends StatelessWidget {
       final dateOnly = DateTime(date.year, date.month, date.day);
       final todayOnly = DateTime(today.year, today.month, today.day);
 
+      // Check if the selected time is in the past
       if (dateOnly == todayOnly && _isPastTodayTime(date, picked)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a future time.')),
+          SnackBar(
+            content: const Text(
+              'The selected time has already passed. Please select a future time slot.',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: Colors.orange.shade800,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
         );
         return;
       }
 
+      // Check if the selected time is within club operating hours
+      if (!_isWithinOperatingHours(picked)) {
+        final openStr = openingTime ?? "00:00";
+        final closeStr = closingTime ?? "23:59";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'This time is outside club operating hours. Please select a time between $openStr and $closeStr.',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: Colors.blue.shade700,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+        return;
+      }
+
+      // Check if the selected time conflicts with already booked slots
       final dur = ctrl.selectedDuration.value ?? 0;
       final conflicts = dur > 0 ? bCtrl.wouldConflict(picked, dur) : bCtrl.isBookedStart(picked);
       if (conflicts) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('This slot is already booked. Please select another.')),
+          SnackBar(
+            content: const Text(
+              'This time slot is unavailable because it has already been booked by another user. Please select a different time.',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'OK',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
         );
         return;
       }
@@ -329,7 +593,11 @@ class BookingSheet extends StatelessWidget {
         ctrl.selectedDuration.value = null;
       }
 
-      final currentPrice = _priceFor(selectedCourt, ctrl.selectedDuration.value);
+      // Check if the selected time is during peak hours
+      final isPeakHour = selectedTime != null && _isDuringPeakHours(selectedCourt, selectedTime);
+
+      // Get price considering peak hours
+      final currentPrice = _priceFor(selectedCourt, ctrl.selectedDuration.value, selectedTime: selectedTime);
       final priceString = currentPrice == null ? '—' : 'Rs. $currentPrice';
 
       final bool pickedConflicts = (selectedTime != null)
@@ -372,17 +640,31 @@ class BookingSheet extends StatelessWidget {
                     ),
                   ),
                   Row(
-                    children: const [
-                      Icon(LucideIcons.calendarClock, color: Color(0xFF0C1E2C)),
-                      SizedBox(width: 8),
-                      Text(
-                        'Book a Court',
-                        style: TextStyle(
-                          color: Color(0xFF0C1E2C),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(LucideIcons.calendarClock, color: Color(0xFF0C1E2C)),
+                          SizedBox(width: 8),
+                          Text(
+                            'Book a Court',
+                            style: TextStyle(
+                              color: Color(0xFF0C1E2C),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
+                      if (openingTime != null && closingTime != null)
+                        Text(
+                          'Hours: $openingTime - $closingTime',
+                          style: const TextStyle(
+                            color: Color(0xFF0C1E2C),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -483,6 +765,42 @@ class BookingSheet extends StatelessWidget {
                       ),
                     ),
 
+                  // Display operating hours information
+                  if (openingTime != null && closingTime != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.info, color: Colors.blue, size: 18),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Club operating hours: $openingTime - $closingTime',
+                              style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // Display peak hour information if applicable
+                  if (isPeakHour)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.trendingUp, color: Colors.red, size: 18),
+                          const SizedBox(width: 6),
+                          const Expanded(
+                            child: Text(
+                              'Peak hour pricing applies',
+                              style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   const SizedBox(height: 16),
 
                   // Duration + Price
@@ -496,7 +814,7 @@ class BookingSheet extends StatelessWidget {
                       runSpacing: 8,
                       children: durations.map((d) {
                         final isSelected = ctrl.selectedDuration.value == d;
-                        final p = _priceFor(selectedCourt, d);
+                        final p = _priceFor(selectedCourt, d, selectedTime: selectedTime);
                         final label = p == null ? '$d min' : '$d min — Rs. $p';
                         return ChoiceChip(
                           label: Text(label),
@@ -575,6 +893,7 @@ class BookingSheet extends StatelessWidget {
                         ? '${ctrl.selectedDuration.value} min'
                         : '—',
                     price: priceString,
+                    isPeakHour: isPeakHour,
                   ),
                 ],
               ),
@@ -684,11 +1003,17 @@ class _FieldCard extends StatelessWidget {
 }
 
 class _SummaryTile extends StatelessWidget {
-  const _SummaryTile({required this.title, required this.value, required this.icon});
+  const _SummaryTile({
+    required this.title,
+    required this.value,
+    required this.icon,
+    this.isPeakHour = false,
+  });
 
   final String title;
   final String value;
   final IconData icon;
+  final bool isPeakHour;
 
   @override
   Widget build(BuildContext context) {
@@ -710,7 +1035,19 @@ class _SummaryTile extends StatelessWidget {
               children: [
                 Text(title, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                 const SizedBox(height: 2),
-                Text(value, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                          value,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w700)
+                      ),
+                    ),
+                    if (isPeakHour && title == 'Price')
+                      const Icon(LucideIcons.trendingUp, size: 16, color: Colors.red),
+                  ],
+                ),
               ],
             ),
           ),
@@ -727,6 +1064,7 @@ class _ResponsiveSummary extends StatelessWidget {
     required this.time,
     required this.duration,
     required this.price,
+    this.isPeakHour = false,
   });
 
   final String court;
@@ -734,6 +1072,7 @@ class _ResponsiveSummary extends StatelessWidget {
   final String time;
   final String duration;
   final String price;
+  final bool isPeakHour;
 
   @override
   Widget build(BuildContext context) {
@@ -751,7 +1090,7 @@ class _ResponsiveSummary extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(child: _SummaryTile(title: 'Duration', value: duration, icon: LucideIcons.timer)),
             const SizedBox(width: 10),
-            Expanded(child: _SummaryTile(title: 'Price', value: price, icon: LucideIcons.badgeDollarSign)),
+            Expanded(child: _SummaryTile(title: 'Price', value: price, icon: LucideIcons.badgeDollarSign, isPeakHour: isPeakHour)),
           ],
         );
       } else if (w >= 560) {
@@ -771,7 +1110,7 @@ class _ResponsiveSummary extends StatelessWidget {
               children: [
                 Expanded(child: _SummaryTile(title: 'Duration', value: duration, icon: LucideIcons.timer)),
                 const SizedBox(width: 10),
-                Expanded(child: _SummaryTile(title: 'Price', value: price, icon: LucideIcons.badgeDollarSign)),
+                Expanded(child: _SummaryTile(title: 'Price', value: price, icon: LucideIcons.badgeDollarSign, isPeakHour: isPeakHour)),
               ],
             ),
           ],
@@ -787,7 +1126,7 @@ class _ResponsiveSummary extends StatelessWidget {
             const SizedBox(height: 10),
             _SummaryTile(title: 'Duration', value: duration, icon: LucideIcons.timer),
             const SizedBox(height: 10),
-            _SummaryTile(title: 'Price', value: price, icon: LucideIcons.badgeDollarSign),
+            _SummaryTile(title: 'Price', value: price, icon: LucideIcons.badgeDollarSign, isPeakHour: isPeakHour),
           ],
         );
       }

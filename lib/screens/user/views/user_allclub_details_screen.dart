@@ -25,8 +25,7 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
   int _currentPage = 0;
   late final List<String> _gallery; // absolute URLs
 
-  // --- CONFIG (fallback only if controller not registered) ---
-  static const String kBaseImageUrl = 'https://your-backend.example.com'; // TODO: set your API/CDN base
+  static const String kBaseImageUrl = 'https://padel-backend-git-main-invosegs-projects.vercel.app'; // TODO: set your API/CDN base
 
   @override
   void initState() {
@@ -58,18 +57,9 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
 
   /// Build a gallery (unique absolute URLs) from multiple fields
   List<String> _resolveGalleryUrls(Map<String, dynamic> pg) {
-    // If controller offers a single resolver, still build multi by scanning keys,
-    // but use the same base normalization as controller when possible.
     final urls = <String>{};
 
     String normalize(String raw) {
-      // Use controller's normalization via imageUrlFor if available for single items
-      if (Get.isRegistered<UserClubScreenController>()) {
-        final ctrl = Get.find<UserClubScreenController>();
-        // ctrl.imageUrlFor returns single; for consistency, still normalize here
-        // but we can attempt to use it when raw equals best candidate.
-        // For simplicity we apply our local normalize, which matches earlier logic.
-      }
       return _normalizeToAbsoluteUrl(raw);
     }
 
@@ -81,12 +71,10 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
       }
     }
 
-    // Singles
     for (final k in ['image', 'imageUrl', 'photo', 'thumbnail', 'cover', 'logo', 'coverImage']) {
       addIfValid(pg[k]);
     }
 
-    // Arrays on playground
     for (final k in ['photos', 'images', 'gallery']) {
       final v = pg[k];
       if (v is List && v.isNotEmpty) {
@@ -94,7 +82,6 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
       }
     }
 
-    // From courts
     final courts = pg['courts'];
     if (courts is List && courts.isNotEmpty) {
       for (final c in courts) {
@@ -114,7 +101,6 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
 
     final list = urls.toList();
     if (list.isEmpty) {
-      // fallback placeholder
       list.add('https://images.unsplash.com/photo-1595526114035-0c45a16a0d79');
     }
     return list;
@@ -128,7 +114,6 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
     if (parsed != null && parsed.hasScheme) return u;
     if (u.startsWith('//')) return 'https:$u';
 
-    // If controller has a BASE_URL, we don't have direct access — use local base
     return _joinUrl(kBaseImageUrl, u.startsWith('/') ? u : '/$u');
   }
 
@@ -143,6 +128,19 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
       color: const Color(0xFF0C1E2C),
       alignment: Alignment.center,
       child: const Icon(Icons.image, size: 50, color: Colors.white),
+    );
+  }
+
+  // Open full screen gallery
+  void _openGallery(int initialIndex) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _FullScreenGallery(
+          gallery: _gallery,
+          initialIndex: initialIndex,
+          headers: _resolveHeaders(),
+        ),
+      ),
     );
   }
 
@@ -186,15 +184,18 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
                         itemCount: _gallery.length,
                         itemBuilder: (_, i) {
                           final url = _gallery[i];
-                          return Image.network(
-                            url,
-                            headers: headers,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return _coverFallback();
-                            },
-                            errorBuilder: (_, __, ___) => _coverFallback(),
+                          return GestureDetector(
+                            onTap: () => _openGallery(_currentPage),
+                            child: Image.network(
+                              url,
+                              headers: headers,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return _coverFallback();
+                              },
+                              errorBuilder: (_, __, ___) => _coverFallback(),
+                            ),
                           );
                         },
                       ),
@@ -215,6 +216,79 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
                         ),
                       ),
 
+                      // Navigation arrows (only show if multiple images)
+                      if (_gallery.length > 1) ...[
+                        // Left arrow
+                        Positioned(
+                          left: 10,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: AnimatedOpacity(
+                              opacity: _currentPage > 0 ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_back_ios,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                onPressed: _currentPage > 0
+                                    ? () {
+                                  _pageController.previousPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                }
+                                    : null,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Right arrow
+                        Positioned(
+                          right: 10,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: AnimatedOpacity(
+                              opacity: _currentPage < _gallery.length - 1 ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                onPressed: _currentPage < _gallery.length - 1
+                                    ? () {
+                                  _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                }
+                                    : null,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+
                       // Dots indicator
                       Positioned(
                         bottom: 12,
@@ -231,10 +305,16 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
                   ),
                 ),
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.share, color: Colors.white),
-                    onPressed: _sharePlayground,
-                  ),
+                  if (_gallery.length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.photo_library_outlined),
+                      onPressed: () => _openGallery(0),
+                      tooltip: 'View all images',
+                    ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.share, color: Colors.white),
+                  //   onPressed: _sharePlayground,
+                  // ),
                   IconButton(
                     icon: Icon(
                       _isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -269,29 +349,44 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
                       const SizedBox(height: 16),
                       if ((widget.playground['description']?.toString() ?? '').isNotEmpty) ...[
                         const SectionTitle('About'),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         Text(
                           widget.playground['description']?.toString() ?? 'No description available',
-                          style: const TextStyle(color: Colors.black87, height: 1.45, fontSize: 14.5),
+                          style: const TextStyle(
+                            color: Color(0xFF0C1E2C),
+                            height: 1.5,
+                            fontSize: 15,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 18),
                       if ((widget.playground['facilities'] as List?)?.isNotEmpty ?? false) ...[
                         const SectionTitle('Facilities'),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: 10,
+                          runSpacing: 10,
                           children: ((widget.playground['facilities'] as List?) ?? [])
-                              .map((f) => Chip(
-                            label: Text(f.toString()),
-                            backgroundColor: const Color(0xFF0C1E2C).withOpacity(0.08),
-                            labelStyle: const TextStyle(color: Color(0xFF0C1E2C), fontWeight: FontWeight.w600),
+                              .map((f) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0C1E2C).withOpacity(0.06),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.black12.withOpacity(0.06)),
+                            ),
+                            child: Text(
+                              f.toString(),
+                              style: const TextStyle(
+                                color: Color(0xFF0C1E2C),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
                           ))
                               .toList(),
                         ),
                       ],
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 10),
                       const SectionTitle('Available Courts'),
                       const SizedBox(height: 10),
                     ],
@@ -386,6 +481,232 @@ class _UserClubDetailScreenState extends State<UserClubDetailScreen> {
 
   void _sharePlayground() {
     // TODO: implement share_plus or platform share
+  }
+}
+
+// ===== Full screen gallery for user =====
+class _FullScreenGallery extends StatefulWidget {
+  final List<String> gallery;
+  final int initialIndex;
+  final Map<String, String>? headers;
+
+  const _FullScreenGallery({
+    required this.gallery,
+    required this.initialIndex,
+    this.headers,
+  });
+
+  @override
+  State<_FullScreenGallery> createState() => _FullScreenGalleryState();
+}
+
+class _FullScreenGalleryState extends State<_FullScreenGallery> {
+  late PageController _pageController;
+  late int _currentIndex;
+  bool _isZoomed = false;
+  final TransformationController _transformationController = TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  void _resetZoom() {
+    _transformationController.value = Matrix4.identity();
+    setState(() {
+      _isZoomed = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          'Gallery ${_currentIndex + 1}/${widget.gallery.length}',
+          style: const TextStyle(color: Colors.white),
+        ),
+        actions: [
+          if (_isZoomed)
+            IconButton(
+              icon: const Icon(Icons.zoom_out_map),
+              onPressed: _resetZoom,
+              tooltip: 'Reset zoom',
+            ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            physics: _isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+                _resetZoom();
+              });
+            },
+            itemCount: widget.gallery.length,
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 4.0,
+                onInteractionStart: (details) {
+                  if (details.pointerCount > 1) {
+                    setState(() {
+                      _isZoomed = true;
+                    });
+                  }
+                },
+                onInteractionEnd: (details) {
+                  final scale = _transformationController.value.getMaxScaleOnAxis();
+                  setState(() {
+                    _isZoomed = scale > 1.0;
+                  });
+                },
+                child: Center(
+                  child: Image.network(
+                    widget.gallery[index],
+                    headers: widget.headers,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                              (loadingProgress.expectedTotalBytes ?? 1)
+                              : null,
+                          color: const Color(0xFF0C1E2C),
+                        ),
+                      );
+                    },
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey[900],
+                      child: const Center(
+                        child: Icon(Icons.broken_image, color: Colors.white, size: 50),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          if (!_isZoomed)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_currentIndex > 0)
+                    _navButton(
+                      icon: Icons.arrow_back_ios,
+                      onTap: () {
+                        _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                  const SizedBox(width: 20),
+                  if (_currentIndex < widget.gallery.length - 1)
+                    _navButton(
+                      icon: Icons.arrow_forward_ios,
+                      onTap: () {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+          if (!_isZoomed && widget.gallery.length > 1)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 80,
+              height: 60,
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: widget.gallery.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  itemBuilder: (context, index) {
+                    final isSelected = index == _currentIndex;
+                    return GestureDetector(
+                      onTap: () {
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: isSelected ? Colors.white : Colors.transparent,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            widget.gallery[index],
+                            headers: widget.headers,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.grey[800],
+                              child: const Icon(Icons.image, color: Colors.white54),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _navButton({required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 24),
+      ),
+    );
   }
 }
 
@@ -713,14 +1034,25 @@ class _CourtCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: Colors.red.withOpacity(0.2)),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(time, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
-          const SizedBox(width: 8),
-          const Text('•', style: TextStyle(color: Colors.red)),
-          const SizedBox(width: 8),
-          Text(price, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(time, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 8),
+              const Text('•', style: TextStyle(color: Colors.red)),
+              const SizedBox(width: 8),
+              Text(price, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'Pro-rated for shorter durations',
+            style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.w500),
+          ),
         ],
       ),
     );
