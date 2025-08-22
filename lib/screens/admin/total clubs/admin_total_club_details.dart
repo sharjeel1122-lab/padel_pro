@@ -153,6 +153,20 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
     );
   }
 
+
+  // Open full screen gallery
+  void _openGallery(int initialIndex) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _FullScreenGallery(
+          gallery: _gallery,
+          initialIndex: initialIndex,
+          headers: _resolveHeaders(),
+        ),
+      ),
+    );
+  }
+
   // ---------------- UI ----------------
 
   @override
@@ -193,15 +207,18 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
                         itemCount: _gallery.length,
                         itemBuilder: (_, i) {
                           final url = _gallery[i];
-                          return Image.network(
-                            url,
-                            headers: headers,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return _coverFallback();
-                            },
-                            errorBuilder: (_, __, ___) => _coverFallback(),
+                          return GestureDetector(
+                            onTap: () => _openGallery(_currentPage),
+                            child: Image.network(
+                              url,
+                              headers: headers,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return _coverFallback();
+                              },
+                              errorBuilder: (_, __, ___) => _coverFallback(),
+                            ),
                           );
                         },
                       ),
@@ -222,6 +239,59 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
                         ),
                       ),
 
+                      // Navigation arrows for carousel
+                      if (_gallery.length > 1)
+                        Positioned.fill(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Left arrow
+                              if (_currentPage > 0)
+                                GestureDetector(
+                                  onTap: () {
+                                    _pageController.previousPage(
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(left: 10),
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+                                  ),
+                                )
+                              else
+                                const SizedBox(width: 40),
+
+                              // Right arrow
+                              if (_currentPage < _gallery.length - 1)
+                                GestureDetector(
+                                  onTap: () {
+                                    _pageController.nextPage(
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(right: 10),
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.3),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+                                  ),
+                                )
+                              else
+                                const SizedBox(width: 40),
+                            ],
+                          ),
+                        ),
+
                       // Dots indicator
                       Positioned(
                         bottom: 12,
@@ -238,7 +308,13 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
                   ),
                 ),
                 actions: [
-
+                  // View gallery button
+                  if (_gallery.length > 1)
+                    IconButton(
+                      icon: const Icon(Icons.photo_library_outlined),
+                      onPressed: () => _openGallery(0),
+                      tooltip: 'View all images',
+                    ),
                 ],
               ),
 
@@ -408,6 +484,240 @@ class _AdminClubDetailScreenState extends State<AdminClubDetailScreen> {
 
   void _sharePlayground() {
     // TODO: implement share_plus or platform share
+  }
+}
+
+// Full screen gallery view
+class _FullScreenGallery extends StatefulWidget {
+  final List<String> gallery;
+  final int initialIndex;
+  final Map<String, String>? headers;
+
+  const _FullScreenGallery({
+    required this.gallery,
+    required this.initialIndex,
+    this.headers,
+  });
+
+  @override
+  State<_FullScreenGallery> createState() => _FullScreenGalleryState();
+}
+
+class _FullScreenGalleryState extends State<_FullScreenGallery> {
+  late PageController _pageController;
+  late int _currentIndex;
+  bool _isZoomed = false;
+  final TransformationController _transformationController = TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _transformationController.dispose();
+    super.dispose();
+  }
+
+  void _resetZoom() {
+    _transformationController.value = Matrix4.identity();
+    setState(() {
+      _isZoomed = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          'Gallery ${_currentIndex + 1}/${widget.gallery.length}',
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        actions: [
+          // Reset zoom button
+          if (_isZoomed)
+            IconButton(
+              icon: const Icon(Icons.zoom_out_map),
+              onPressed: _resetZoom,
+              tooltip: 'Reset zoom',
+            ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Main gallery
+          PageView.builder(
+            controller: _pageController,
+            physics: _isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+                _resetZoom(); // Reset zoom when changing images
+              });
+            },
+            itemCount: widget.gallery.length,
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 4.0,
+                onInteractionStart: (details) {
+                  // When user starts pinch-zoom
+                  if (details.pointerCount > 1) {
+                    setState(() {
+                      _isZoomed = true;
+                    });
+                  }
+                },
+                onInteractionEnd: (details) {
+                  // Check if we're still zoomed in
+                  final scale = _transformationController.value.getMaxScaleOnAxis();
+                  setState(() {
+                    _isZoomed = scale > 1.0;
+                  });
+                },
+                child: Center(
+                  child: Image.network(
+                    widget.gallery[index],
+                    headers: widget.headers,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                              (loadingProgress.expectedTotalBytes ?? 1)
+                              : null,
+                          color: kAccent,
+                        ),
+                      );
+                    },
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey[900],
+                      child: const Center(
+                        child: Icon(Icons.broken_image, color: Colors.white, size: 50),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Navigation arrows - only show when not zoomed
+          if (!_isZoomed)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 20,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_currentIndex > 0)
+                    _navButton(
+                      icon: Icons.arrow_back_ios,
+                      onTap: () {
+                        _pageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                  const SizedBox(width: 20),
+                  if (_currentIndex < widget.gallery.length - 1)
+                    _navButton(
+                      icon: Icons.arrow_forward_ios,
+                      onTap: () {
+                        _pageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+
+          // Thumbnail strip at bottom - only show when not zoomed
+          if (!_isZoomed && widget.gallery.length > 1)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 80,
+              height: 60,
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: widget.gallery.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  itemBuilder: (context, index) {
+                    final isSelected = index == _currentIndex;
+                    return GestureDetector(
+                      onTap: () {
+                        _pageController.animateToPage(
+                          index,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: isSelected ? Colors.white : Colors.transparent,
+                            width: 2,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            widget.gallery[index],
+                            headers: widget.headers,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.grey[800],
+                              child: const Icon(Icons.image, color: Colors.white54),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _navButton({required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 24),
+      ),
+    );
   }
 }
 
@@ -764,36 +1074,3 @@ class _CourtCard extends StatelessWidget {
     );
   }
 }
-
-// class _BottomCTA extends StatelessWidget {
-//   const _BottomCTA({required this.onPressed});
-//   final VoidCallback onPressed;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 16, offset: const Offset(0, -6))],
-//       ),
-//       child: SafeArea(
-//         top: false,
-//         child: ElevatedButton(
-//           onPressed: onPressed,
-//           style: ElevatedButton.styleFrom(
-//             backgroundColor: const Color(0xFF0C1E2C),
-//             foregroundColor: Colors.white,
-//             minimumSize: const Size(double.infinity, 54),
-//             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-//             elevation: 0,
-//           ),
-//           child: const Text(
-//             'Book Now',
-//             style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.2, fontSize: 16),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }

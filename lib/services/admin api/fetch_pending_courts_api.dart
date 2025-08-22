@@ -119,6 +119,19 @@ class FetchPendingCourtsApi {
       },
     );
 
+    if (res.statusCode == 404) {
+      try {
+        final Map<String, dynamic> body = jsonDecode(res.body);
+        final message = body['message']?.toString().toLowerCase() ?? '';
+
+        if (message.contains('no pending courts found')) {
+          return <PendingCourt>[];
+        }
+      } catch (_) {
+        // If we can't parse the body, continue to the general error handling
+      }
+    }
+
     if (res.statusCode != 200) {
       throw Exception("Failed to fetch pending courts: ${res.statusCode} ${res.body}");
     }

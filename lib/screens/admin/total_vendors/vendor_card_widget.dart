@@ -21,37 +21,23 @@ class VendorCardWidget extends StatelessWidget {
   });
 
   void _showDeleteDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF0A3B5C),
-        title: const Text("Confirm Delete", style: TextStyle(color: Colors.white)),
-        content: const Text(
-          "Are you sure you want to delete this vendor?",
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.white)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onDeleteConfirmed();
-            },
-            child: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
-    );
+    onDeleteConfirmed();
   }
 
   @override
   Widget build(BuildContext context) {
     final fullName = "${vendor.firstName} ${vendor.lastName}".trim();
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return SizedBox(
+    // Responsive font sizes
+    final double nameFontSize = screenWidth < 360 ? 14.0 : 16.0;
+    final double infoFontSize = screenWidth < 360 ? 12.0 : 14.0;
+
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(
+        minHeight: 180,
+      ),
       child: Card(
         color: const Color(0xFF0A3B5C),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -71,7 +57,7 @@ class VendorCardWidget extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: nameFontSize,
                         color: Colors.white,
                       ),
                     ),
@@ -81,18 +67,82 @@ class VendorCardWidget extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 6),
-              Text("Email: ${vendor.email}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
-              Text("Phone: ${vendor.phone ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
-              Text("City: ${vendor.city ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
-              Text("NTN: ${vendor.ntn ?? '—'}", maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70)),
+
+              // Info section with responsive text
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          "Email: ${vendor.email}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.white70, fontSize: infoFontSize)
+                      ),
+                      Text(
+                          "Phone: ${vendor.phone ?? '—'}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.white70, fontSize: infoFontSize)
+                      ),
+                      Text(
+                          "City: ${vendor.city ?? '—'}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.white70, fontSize: infoFontSize)
+                      ),
+                      Text(
+                          "NTN: ${vendor.ntn ?? '—'}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.white70, fontSize: infoFontSize)
+                      ),
+                    ],
+                  );
+                },
+              ),
+
               const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  tooltip: 'Delete vendor',
-                  onPressed: onDeleteConfirmed,
-                  icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                ),
+
+              // Action buttons row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Edit button
+                  // TextButton.icon(
+                  //   onPressed: onEdit,
+                  //   icon: const Icon(Icons.edit, color: Colors.white70, size: 16),
+                  //   label: Text(
+                  //     "Edit",
+                  //     style: TextStyle(
+                  //       color: Colors.white70,
+                  //       fontSize: infoFontSize,
+                  //     ),
+                  //   ),
+                  //   style: TextButton.styleFrom(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 8),
+                  //     minimumSize: const Size(60, 36),
+                  //   ),
+                  // ),
+
+                  // Delete button - now properly connected to the dialog
+                  TextButton.icon(
+                    onPressed: () => _showDeleteDialog(context),
+                    icon: const Icon(Icons.delete, color: Colors.redAccent, size: 16),
+                    label: Text(
+                      "Delete",
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: infoFontSize,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(60, 36),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

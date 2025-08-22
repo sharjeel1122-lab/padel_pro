@@ -29,6 +29,7 @@ class SignUpScreen extends StatelessWidget {
   final _cityController      = TextEditingController();
   final _townController      = TextEditingController(); // REQUIRED now
   final _passwordController  = TextEditingController();
+  final _confirmPasswordController = TextEditingController(); // ✅ NEW confirm password
   final _mpinController      = TextEditingController();
 
   Future<void> _pickImage() async {
@@ -272,6 +273,21 @@ class SignUpScreen extends StatelessWidget {
                       return null;
                     },
                   ),
+                ),
+
+                // ✅ Confirm Password
+                CustomTextField(
+                  controller: _confirmPasswordController,
+                  label: 'Confirm Password',
+                  icon: Icons.lock_outline,
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please confirm your password';
+                    if (value != _passwordController.text) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 30),

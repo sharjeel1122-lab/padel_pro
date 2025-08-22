@@ -19,6 +19,7 @@ class VendorSignUpScreen extends StatelessWidget {
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController(); // ✅ NEW
   final _mpinController = TextEditingController();
   final _phoneController = TextEditingController();
   final _cnicController = TextEditingController();
@@ -162,6 +163,23 @@ class VendorSignUpScreen extends StatelessWidget {
                       ? 'Minimum 6 characters'
                       : null,
                 )),
+
+                // ✅ Confirm Password
+                CustomTextField(
+                  controller: _confirmPasswordController,
+                  label: 'Confirm Password',
+                  icon: Icons.lock_outline,
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please confirm password';
+                    }
+                    if (value.trim() != _passwordController.text.trim()) {
+                      return 'Passwords do not match';
+                    }
+                    return null;
+                  },
+                ),
 
                 CustomTextField(
                   controller: _mpinController,

@@ -11,6 +11,7 @@ class TotalVendorsController extends GetxController {
   final vendors = <VendorsModel>[].obs;
   final searchQuery = ''.obs;
   final isLoading = true.obs;
+  var isDeleting = false.obs;
 
   List<VendorsModel> get filteredVendors {
     final q = searchQuery.value.trim().toLowerCase();

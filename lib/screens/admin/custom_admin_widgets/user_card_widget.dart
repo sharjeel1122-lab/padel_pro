@@ -37,12 +37,26 @@ class UserCardWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: IconButton(
-                tooltip: 'Delete user',
+              child: TextButton.icon(
                 onPressed: onDeleteConfirmed,
                 icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                label: const Text(
+                  "Delete",
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
               ),
             ),
+
+
           ],
         ),
       ),
